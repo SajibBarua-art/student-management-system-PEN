@@ -48,23 +48,26 @@ export function Modal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-      {/* Backdrop */}
+      {/* Deep frosted backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+        className="fixed inset-0 bg-[#07090f]/80 backdrop-blur-md transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
       />
 
       {/* Modal Dialog */}
       <div
-        className={`relative w-full ${maxWidthClasses[maxWidth]} bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl z-10 overflow-hidden transform transition-all animate-in zoom-in-95 duration-200 my-8`}
+        className={`relative w-full ${maxWidthClasses[maxWidth]} bg-[#111624] border border-white/10 rounded-2xl shadow-2xl shadow-black/80 z-10 overflow-hidden transform transition-all animate-in zoom-in-95 duration-200 my-8 text-slate-100`}
       >
-        <div className="flex items-start justify-between p-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
+        {/* Subtle accent top border glow */}
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-sky-500" />
+
+        <div className="flex items-start justify-between p-6 pb-4 border-b border-white/[0.06]">
           <div>
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+            <h3 className="text-lg font-bold text-white tracking-tight">
               {title}
             </h3>
             {description && (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                 {description}
               </p>
             )}
@@ -72,7 +75,7 @@ export function Modal({
           <button
             type="button"
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/[0.08] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>

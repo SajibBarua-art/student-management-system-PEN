@@ -15,6 +15,7 @@ import {
   CheckCheck,
   Send,
   AlertTriangle,
+  Sparkles,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +60,6 @@ export function MarksheetWorkflow({
   const [batchActionLoading, setBatchActionLoading] = useState(false);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
-  // Load assessments and students
   const loadData = async () => {
     setIsLoading(true);
     try {
@@ -91,7 +91,6 @@ export function MarksheetWorkflow({
     loadData();
   }, [initialAssessmentId]);
 
-  // When selected assessment changes, synchronize grading state from existing grades
   useEffect(() => {
     if (!selectedAssessmentId) return;
     const currentAsm = assessments.find((a) => a.id === selectedAssessmentId);
@@ -100,7 +99,6 @@ export function MarksheetWorkflow({
     const rowState: Record<string, any> = {};
 
     students.forEach((student) => {
-      // Find if student has grade for this assessment
       const existingGrade = currentAsm.grades?.find(
         (g: any) => g.studentId === student.id
       );
@@ -165,8 +163,6 @@ export function MarksheetWorkflow({
     }
 
     const nextPublished = !current.isPublished;
-
-    // Save and toggle in one go
     await handleSaveGrade(studentId, nextPublished);
   };
 
@@ -246,7 +242,6 @@ export function MarksheetWorkflow({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Batch action failed");
 
-      // Update local grading rows state
       setGradingRows((prev) => {
         const next = { ...prev };
         Object.keys(next).forEach((sid) => {
@@ -274,26 +269,29 @@ export function MarksheetWorkflow({
       {/* Workflow Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Marksheet & Results Publication
-          </h2>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-            Enter 0–100 numeric scores, review auto-classifications (Pass/Merit/Distinction), and control per-student result publication.
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              Marksheet & Results Publication
+            </h2>
+            <Badge variant="purple">Examination Board</Badge>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Enter 0–100 numeric scores, review auto-classifications, and control per-student result visibility.
           </p>
         </div>
 
         {/* Assessment Selector */}
         <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+          <label className="text-xs font-bold text-slate-300 whitespace-nowrap">
             Assessment:
           </label>
           <select
             value={selectedAssessmentId}
             onChange={(e) => setSelectedAssessmentId(e.target.value)}
-            className="px-3 py-1.5 text-xs sm:text-sm bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold cursor-pointer max-w-xs truncate"
+            className="px-3.5 py-2 text-xs sm:text-sm bg-slate-900 border border-white/10 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold cursor-pointer max-w-xs truncate"
           >
             {assessments.map((a) => (
-              <option key={a.id} value={a.id}>
+              <option key={a.id} value={a.id} className="bg-[#111625]">
                 {a.moduleCode} — {a.title}
               </option>
             ))}
@@ -307,31 +305,31 @@ export function MarksheetWorkflow({
         </Alert>
       )}
 
-      {/* Classification Legend Card */}
+      {/* Classification Legend Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <div className="p-3 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800 text-center">
-          <span className="font-bold text-emerald-800 dark:text-emerald-300 block">
+        <div className="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/25 text-center">
+          <span className="font-extrabold text-emerald-400 block text-sm">
             Distinction
           </span>
-          <span className="text-[11px] text-emerald-600">Grade ≥ 70%</span>
+          <span className="text-[11px] text-emerald-500/80 font-medium">Grade ≥ 70%</span>
         </div>
-        <div className="p-3 bg-blue-50/70 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-800 text-center">
-          <span className="font-bold text-blue-800 dark:text-blue-300 block">
+        <div className="p-3.5 rounded-2xl bg-sky-950/20 border border-sky-500/25 text-center">
+          <span className="font-extrabold text-sky-400 block text-sm">
             Merit
           </span>
-          <span className="text-[11px] text-blue-600">Grade ≥ 60%</span>
+          <span className="text-[11px] text-sky-500/80 font-medium">Grade ≥ 60%</span>
         </div>
-        <div className="p-3 bg-amber-50/70 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800 text-center">
-          <span className="font-bold text-amber-800 dark:text-amber-300 block">
+        <div className="p-3.5 rounded-2xl bg-amber-950/20 border border-amber-500/25 text-center">
+          <span className="font-extrabold text-amber-400 block text-sm">
             Pass
           </span>
-          <span className="text-[11px] text-amber-600">Grade ≥ 40%</span>
+          <span className="text-[11px] text-amber-500/80 font-medium">Grade ≥ 40%</span>
         </div>
-        <div className="p-3 bg-rose-50/70 dark:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-800 text-center">
-          <span className="font-bold text-rose-800 dark:text-rose-300 block">
+        <div className="p-3.5 rounded-2xl bg-rose-950/20 border border-rose-500/25 text-center">
+          <span className="font-extrabold text-rose-400 block text-sm">
             Fail (Resit Required)
           </span>
-          <span className="text-[11px] text-rose-600">Grade &lt; 40%</span>
+          <span className="text-[11px] text-rose-500/80 font-medium">Grade &lt; 40%</span>
         </div>
       </div>
 
@@ -344,8 +342,8 @@ export function MarksheetWorkflow({
                 ? `${currentAssessment.moduleCode}: ${currentAssessment.title}`
                 : "Assessment Marksheet"}
             </CardTitle>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              Results marked 'Withheld' will remain hidden from the student portal until published by Registry.
+            <p className="text-xs text-slate-400 mt-0.5">
+              Results marked 'Withheld' will remain completely hidden from the student portal until published by Registry.
             </p>
           </div>
 
@@ -357,12 +355,12 @@ export function MarksheetWorkflow({
               isLoading={batchActionLoading}
               className="text-xs"
             >
-              <EyeOff className="w-3.5 h-3.5 mr-1.5" />
+              <EyeOff className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
               Withhold All
             </Button>
             <Button
               size="sm"
-              variant="success"
+              variant="gradient"
               onClick={() => handleBatchPublish(true)}
               isLoading={batchActionLoading}
               className="text-xs"
@@ -375,19 +373,19 @@ export function MarksheetWorkflow({
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm">
-            <thead className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 font-semibold border-b border-zinc-200 dark:border-zinc-800">
+            <thead className="bg-slate-900/90 text-slate-400 font-bold border-b border-white/[0.08]">
               <tr>
-                <th className="py-3 px-4">Student</th>
-                <th className="py-3 px-4">Submission Status</th>
-                <th className="py-3 px-4">Submitted File</th>
-                <th className="py-3 px-4 w-32">Numeric Mark (0–100)</th>
-                <th className="py-3 px-4">Classification</th>
-                <th className="py-3 px-4 min-w-[200px]">Marker Feedback</th>
-                <th className="py-3 px-4 text-center">Publication Status</th>
-                <th className="py-3 px-4 text-right">Action</th>
+                <th className="py-3.5 px-5">Student</th>
+                <th className="py-3.5 px-5">Submission</th>
+                <th className="py-3.5 px-5">Submitted File</th>
+                <th className="py-3.5 px-5 w-36">Numeric Grade (0–100)</th>
+                <th className="py-3.5 px-5">Classification</th>
+                <th className="py-3.5 px-5 min-w-[200px]">Marker Feedback</th>
+                <th className="py-3.5 px-5 text-center">Publication Status</th>
+                <th className="py-3.5 px-5 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+            <tbody className="divide-y divide-white/[0.05]">
               {students.map((student) => {
                 const sub = currentAssessment?.submissions?.find(
                   (s: any) => s.studentId === student.id
@@ -404,61 +402,55 @@ export function MarksheetWorkflow({
                 return (
                   <tr
                     key={student.id}
-                    className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors"
+                    className="hover:bg-white/[0.03] transition-colors"
                   >
                     {/* Student Info */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-zinc-900 dark:text-zinc-100">
+                    <td className="py-3.5 px-5">
+                      <div className="font-bold text-white">
                         {student.fullName}
                       </div>
-                      <div className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400">
+                      <div className="text-[11px] font-mono text-indigo-400">
                         {student.studentId}
                       </div>
                     </td>
 
                     {/* Submission status & Late flag */}
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-5">
                       {sub ? (
                         sub.isLate ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-300">
-                            <AlertTriangle className="w-3 h-3" />
-                            Late (v{sub.version})
-                          </span>
+                          <Badge variant="danger" dot>Late (v{sub.version})</Badge>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300">
-                            <CheckCircle className="w-3 h-3" />
-                            On-Time (v{sub.version})
-                          </span>
+                          <Badge variant="success" dot>On-Time (v{sub.version})</Badge>
                         )
                       ) : (
-                        <span className="text-[11px] text-zinc-400 italic">
+                        <span className="text-[11px] text-slate-500 italic">
                           Not Submitted
                         </span>
                       )}
                     </td>
 
                     {/* Submitted file download */}
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-5">
                       {sub ? (
                         <a
                           href={sub.fileUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-semibold"
+                          className="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 font-bold"
                         >
-                          <Download className="w-3 h-3" />
+                          <Download className="w-3.5 h-3.5" />
                           <span className="max-w-[120px] truncate">
                             {sub.fileName}
                           </span>
                         </a>
                       ) : (
-                        <span className="text-zinc-400 text-xs">—</span>
+                        <span className="text-slate-500 text-xs">—</span>
                       )}
                     </td>
 
                     {/* Numeric Grade Input */}
-                    <td className="py-3.5 px-4">
-                      <div className="relative">
+                    <td className="py-3.5 px-5">
+                      <div className="flex items-center gap-1.5">
                         <input
                           type="number"
                           min="0"
@@ -469,42 +461,49 @@ export function MarksheetWorkflow({
                           onChange={(e) =>
                             handleGradeInputChange(student.id, e.target.value)
                           }
-                          className="w-24 px-2.5 py-1 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-center"
+                          className="w-20 px-2.5 py-1 text-sm bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-extrabold text-center"
                         />
-                        <span className="text-xs text-zinc-400 ml-1">/100</span>
+                        <span className="text-xs text-slate-500 font-mono">/100</span>
                       </div>
                     </td>
 
-                    {/* Computed Classification */}
-                    <td className="py-3.5 px-4">
+                    {/* Classification */}
+                    <td className="py-3.5 px-5">
                       {row.numericGrade !== "" ? (
                         <Badge
-                          className={getClassificationBadgeColor(
-                            row.classification as any
-                          )}
+                          variant={
+                            row.classification === "DISTINCTION"
+                              ? "success"
+                              : row.classification === "MERIT"
+                              ? "info"
+                              : row.classification === "PASS"
+                              ? "warning"
+                              : "danger"
+                          }
+                          dot
                         >
                           {row.classification}
                         </Badge>
                       ) : (
-                        <span className="text-zinc-400 text-xs italic">Ungraded</span>
+                        <span className="text-slate-500 text-xs italic">Ungraded</span>
                       )}
                     </td>
 
-                    {/* Marker feedback input */}
-                    <td className="py-3.5 px-4">
+                    {/* Qualitative Feedback */}
+                    <td className="py-3.5 px-5">
                       <input
                         type="text"
-                        placeholder="Add constructive qualitative feedback..."
+                        placeholder="Constructive feedback..."
                         value={row.feedback}
                         onChange={(e) =>
                           handleFeedbackChange(student.id, e.target.value)
                         }
-                        className="w-full px-2.5 py-1 text-xs bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="w-full px-3 py-1.5 text-xs bg-slate-900 border border-white/10 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                       />
                     </td>
 
-                    {/* Publication Status Toggle */}
-                    <td className="py-3.5 px-4 text-center">
+                    {/* Publication Toggle */}
+                    <td className="py-3.5 px-5 text-center">
                       <button
                         type="button"
                         onClick={() => handleTogglePublish(student.id)}
@@ -514,10 +513,10 @@ export function MarksheetWorkflow({
                             ? "Click to withhold this student's result"
                             : "Click to publish this student's result to their portal"
                         }
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                           row.isPublished
-                            ? "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-700"
-                            : "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700"
+                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-xs shadow-emerald-950/40"
+                            : "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-xs shadow-amber-950/40"
                         } disabled:opacity-40 disabled:cursor-not-allowed`}
                       >
                         {row.isPublished ? (
@@ -534,19 +533,19 @@ export function MarksheetWorkflow({
                       </button>
                     </td>
 
-                    {/* Save Grade Button */}
-                    <td className="py-3.5 px-4 text-right">
+                    {/* Save Button */}
+                    <td className="py-3.5 px-5 text-right">
                       <Button
                         size="sm"
-                        variant={row.isSaved ? "outline" : "primary"}
+                        variant={row.isSaved ? "outline" : "gradient"}
                         onClick={() => handleSaveGrade(student.id)}
                         isLoading={row.isSaving}
                         disabled={row.numericGrade === ""}
-                        className="text-xs h-7 py-0 px-2.5"
+                        className="text-xs h-7 py-0 px-3"
                       >
                         {row.isSaved ? (
                           <>
-                            <CheckCheck className="w-3 h-3 text-emerald-600 mr-1" />
+                            <CheckCheck className="w-3 h-3 text-emerald-400 mr-1" />
                             Saved
                           </>
                         ) : (

@@ -1,21 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
+  variable: "--font-sans",
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const mono = JetBrains_Mono({
   subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "RegistryOS | Student Management System",
+  title: "RegistryOS — Enterprise Student Management System",
   description:
-    "Student Management System Registry Module covering student enrolment, fee scheduling and transaction tracking, assessment submissions, and marksheet publication.",
+    "PEN Global Registry Module for modern higher-education administration: Student Enrolment, Real-time Fee Tracking, Assessment Workflows, and Examination Board Marksheets.",
 };
 
 export default function RootLayout({
@@ -24,11 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-zinc-50/60 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 font-sans">
+    <html lang="en" className={`${jakarta.variable} ${mono.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col font-sans bg-[#0c0f17] text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200">
         {children}
       </body>
     </html>

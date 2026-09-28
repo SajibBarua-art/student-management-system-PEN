@@ -17,6 +17,9 @@ import {
   RefreshCw,
   Lock,
   User,
+  Sparkles,
+  ShieldCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +30,6 @@ import {
   formatCurrency,
   formatDate,
   formatDateTime,
-  getStatusBadgeColor,
   isPastDate,
 } from "@/lib/formatters";
 import {
@@ -54,7 +56,6 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
 
-  // Fetch full student record and assessments
   const fetchStudentData = async () => {
     setIsLoading(true);
     try {
@@ -125,7 +126,7 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
       setTimeout(() => {
         setIsUploadModalOpen(false);
         fetchStudentData();
-      }, 1800);
+      }, 1600);
     } catch (err: any) {
       setUploadError(err.message);
     } finally {
@@ -135,53 +136,55 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
 
   if (isLoading || !student) {
     return (
-      <div className="py-24 text-center">
-        <div className="animate-spin inline-block w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full mb-3" />
-        <p className="text-zinc-500 text-sm">Loading Student Self-Service Portal...</p>
+      <div className="py-24 text-center text-slate-400">
+        <div className="animate-spin inline-block w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full mb-3" />
+        <p className="text-sm font-medium">Accessing Student Portal...</p>
       </div>
     );
   }
 
-  // Published grades only for this student
   const publishedGrades = student.grades?.filter((g: any) => g.isPublished) || [];
   const withheldGradesCount = (student.grades?.length || 0) - publishedGrades.length;
 
   return (
     <div className="space-y-6">
-      {/* Student Banner */}
-      <div className="p-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 rounded-2xl text-white shadow-lg">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xs flex items-center justify-center text-white border border-white/20 shrink-0">
-              <GraduationCap className="w-7 h-7" />
+      {/* Student Identity Card / Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8 border border-white/10 bg-gradient-to-br from-[#12162a] via-[#101423] to-[#0a0d18] shadow-2xl">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-start gap-4 sm:gap-5">
+            <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-xl shadow-indigo-600/30 shrink-0">
+              <GraduationCap className="w-8 h-8" />
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#12162a]" />
             </div>
+
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                   {student.fullName}
                 </h1>
-                <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-white/20 text-indigo-100 font-semibold">
+                <span className="font-mono text-xs px-3 py-1 rounded-full bg-white/[0.08] text-indigo-300 font-bold border border-white/10">
                   {student.studentId}
                 </span>
-                <Badge className={getStatusBadgeColor(student.status)}>
-                  {student.status}
-                </Badge>
+                <Badge variant="purple" dot>{student.status}</Badge>
               </div>
-              <p className="text-sm text-indigo-200 mt-1">
+
+              <p className="text-xs sm:text-sm text-slate-300 mt-1 font-medium">
                 {student.programme?.name} ({student.programme?.code}) • Academic Year:{" "}
-                {student.academicYear}
+                <span className="text-white font-semibold">{student.academicYear}</span>
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="bg-white/10 backdrop-blur-xs p-3 rounded-xl border border-white/10 text-right">
-              <span className="text-[11px] text-indigo-200 block">
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-white/10 backdrop-blur-md text-right">
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
                 Tuition Balance
               </span>
               <span
-                className={`text-lg font-bold block ${
-                  student.balance > 0 ? "text-amber-300" : "text-emerald-300"
+                className={`text-xl font-extrabold block ${
+                  student.balance > 0 ? "text-amber-400" : "text-emerald-400"
                 }`}
               >
                 {formatCurrency(student.balance)}
@@ -190,26 +193,26 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
           </div>
         </div>
 
-        {/* Tab Selector */}
-        <div className="flex items-center gap-2 mt-6 pt-4 border-t border-white/10 overflow-x-auto scrollbar-none">
+        {/* Tab Navigation */}
+        <div className="flex items-center gap-2 mt-6 pt-5 border-t border-white/[0.08] overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveTab("assessments")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               activeTab === "assessments"
-                ? "bg-white text-indigo-950 shadow-md"
-                : "text-indigo-200 hover:text-white hover:bg-white/10"
+                ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/30"
+                : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
             }`}
           >
             <FileCheck className="w-4 h-4" />
-            <span>My Assessments & Submissions</span>
+            <span>Coursework Submissions</span>
           </button>
 
           <button
             onClick={() => setActiveTab("marksheet")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               activeTab === "marksheet"
-                ? "bg-white text-indigo-950 shadow-md"
-                : "text-indigo-200 hover:text-white hover:bg-white/10"
+                ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/30"
+                : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
             }`}
           >
             <Award className="w-4 h-4" />
@@ -218,10 +221,10 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
 
           <button
             onClick={() => setActiveTab("finance")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               activeTab === "finance"
-                ? "bg-white text-indigo-950 shadow-md"
-                : "text-indigo-200 hover:text-white hover:bg-white/10"
+                ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/30"
+                : "text-slate-400 hover:text-white hover:bg-white/[0.04]"
             }`}
           >
             <CreditCard className="w-4 h-4" />
@@ -230,20 +233,20 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
         </div>
       </div>
 
-      {/* Tab 1: Assessments & Submissions */}
+      {/* Tab 1: Coursework Submissions */}
       {activeTab === "assessments" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
-                Coursework Submissions
+              <h3 className="text-lg font-bold text-white tracking-tight">
+                Coursework Assignments
               </h3>
-              <p className="text-xs text-zinc-500">
-                Upload your assignments in PDF or DOCX format. Resubmissions are allowed before the official deadline.
+              <p className="text-xs text-slate-400">
+                Upload deliverables in PDF or DOCX format. Resubmissions are allowed until the official deadline.
               </p>
             </div>
             <Button size="sm" variant="outline" onClick={fetchStudentData}>
-              <RefreshCw className="w-3.5 h-3.5 mr-1" />
+              <RefreshCw className="w-3.5 h-3.5 mr-1 text-indigo-400" />
               Refresh
             </Button>
           </div>
@@ -258,85 +261,84 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
               return (
                 <Card
                   key={asm.id}
-                  className="flex flex-col justify-between hover:border-zinc-300 dark:hover:border-zinc-700"
+                  className="flex flex-col justify-between"
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
-                      <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400">
+                      <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
                         {asm.moduleCode}
                       </span>
                       {pastDeadline ? (
                         <Badge variant="secondary">Deadline Passed</Badge>
                       ) : (
-                        <Badge variant="success">Open for Submission</Badge>
+                        <Badge variant="success" dot>Open for Submission</Badge>
                       )}
                     </div>
-                    <CardTitle className="text-base mt-2">{asm.title}</CardTitle>
-                    <p className="text-xs text-zinc-500">{asm.moduleName}</p>
+                    <CardTitle className="text-base sm:text-lg mt-3">{asm.title}</CardTitle>
+                    <p className="text-xs text-slate-400 font-medium">{asm.moduleName}</p>
                   </CardHeader>
 
                   <CardContent className="py-2 text-xs space-y-3">
                     {asm.description && (
-                      <p className="text-zinc-600 dark:text-zinc-400 line-clamp-2">
+                      <p className="text-slate-300 line-clamp-2 leading-relaxed">
                         {asm.description}
                       </p>
                     )}
 
-                    <div className="flex items-center gap-1.5 text-zinc-500">
-                      <Clock className="w-4 h-4 text-zinc-400" />
+                    <div className="flex items-center gap-2 text-slate-300 font-medium bg-slate-900/60 p-2.5 rounded-xl border border-white/[0.04]">
+                      <Clock className="w-4 h-4 text-indigo-400 shrink-0" />
                       <span>Deadline: {formatDateTime(asm.deadline)}</span>
                     </div>
 
-                    {/* Submission status for this student */}
-                    <div className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-800/50">
+                    {/* Status Pill */}
+                    <div className="p-3.5 rounded-xl border border-white/[0.06] bg-slate-900/80">
                       {mySubmission ? (
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-                              <CheckCircle className="w-4 h-4 text-emerald-600" />
-                              Submission Received
+                            <span className="font-bold text-white flex items-center gap-1.5">
+                              <CheckCircle className="w-4 h-4 text-emerald-400" />
+                              Submission Confirmed
                             </span>
-                            <span className="text-[11px] text-zinc-500">
+                            <span className="text-[11px] text-slate-400 font-mono">
                               Version {mySubmission.version}
                             </span>
                           </div>
-                          <div className="flex items-center justify-between text-[11px] text-zinc-500">
-                            <span className="font-mono truncate max-w-[200px]">
+                          <div className="flex items-center justify-between text-[11px] text-slate-400">
+                            <span className="font-mono text-slate-300 truncate max-w-[200px]">
                               {mySubmission.fileName}
                             </span>
                             {mySubmission.isLate && (
-                              <Badge variant="danger" className="text-[10px]">
+                              <Badge variant="danger" dot className="text-[10px]">
                                 Submitted Late
                               </Badge>
                             )}
                           </div>
-                          <div className="text-[11px] text-zinc-400">
+                          <div className="text-[11px] text-slate-500">
                             Uploaded on: {formatDateTime(mySubmission.submittedAt)}
                           </div>
                         </div>
                       ) : (
-                        <div className="text-zinc-500 italic flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4 text-zinc-400" />
+                        <div className="text-slate-400 italic flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 text-slate-500" />
                           <span>No submission uploaded yet</span>
                         </div>
                       )}
                     </div>
                   </CardContent>
 
-                  <div className="p-4 pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-2">
+                  <div className="p-4 sm:p-5 pt-0 border-t border-white/[0.04] flex items-center justify-between gap-2">
                     {mySubmission ? (
                       <>
                         <a
                           href={mySubmission.fileUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-400 hover:text-indigo-300"
                         >
                           <Download className="w-3.5 h-3.5" />
-                          Download My File
+                          Download File
                         </a>
 
-                        {/* Resubmission logic: allowed before deadline */}
                         {!pastDeadline ? (
                           <Button
                             size="sm"
@@ -344,11 +346,11 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
                             onClick={() => handleOpenUploadModal(asm)}
                             className="text-xs"
                           >
-                            <UploadCloud className="w-3.5 h-3.5 mr-1" />
-                            Resubmit File
+                            <UploadCloud className="w-3.5 h-3.5 mr-1 text-indigo-400" />
+                            Resubmit (v{mySubmission.version + 1})
                           </Button>
                         ) : (
-                          <span className="text-[11px] text-zinc-400 italic">
+                          <span className="text-[11px] text-slate-500 italic">
                             Resubmission closed
                           </span>
                         )}
@@ -356,11 +358,12 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
                     ) : (
                       <Button
                         size="sm"
+                        variant="gradient"
                         onClick={() => handleOpenUploadModal(asm)}
                         className="w-full text-xs"
                       >
                         <UploadCloud className="w-4 h-4 mr-1.5" />
-                        Upload Submission (PDF / DOCX)
+                        Upload Assignment (PDF / DOCX)
                       </Button>
                     )}
                   </div>
@@ -376,79 +379,89 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
-                Official Academic Marksheet
+              <h3 className="text-lg font-bold text-white tracking-tight">
+                Official University Marksheet
               </h3>
-              <p className="text-xs text-zinc-500">
-                Verified grades published by the Registry Examination Board.
+              <p className="text-xs text-slate-400">
+                Official grades confirmed and published by the Registry Examination Board.
               </p>
             </div>
-            <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">
-              Registry Verified
+            <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-bold">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Registry Board Stamped
             </span>
           </div>
 
-          {/* If there are withheld results */}
+          {/* Withheld notice (Specification: Students see marksheet only after published) */}
           {withheldGradesCount > 0 && (
-            <Alert variant="info" title="Examination Board Moderation in Progress">
-              {withheldGradesCount} assessment result(s) are currently undergoing external moderation and will be made visible once formally published by the Registry.
+            <Alert variant="info" title="Examination Board Moderation Notice">
+              {withheldGradesCount} assessment module(s) are undergoing external moderation by the Registry Board and will be made visible once published.
             </Alert>
           )}
 
           {publishedGrades.length === 0 ? (
-            <Card className="p-12 text-center text-zinc-500">
-              <Lock className="w-10 h-10 mx-auto text-zinc-400 mb-2" />
-              <h4 className="text-base font-semibold text-zinc-800 dark:text-zinc-200">
+            <Card className="p-14 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center text-slate-400 mx-auto mb-3">
+                <Lock className="w-6 h-6" />
+              </div>
+              <h4 className="text-base font-bold text-white">
                 No Results Published Yet
               </h4>
-              <p className="text-xs text-zinc-400 max-w-sm mx-auto mt-1">
-                Your submitted assessments are being evaluated. As soon as a Registry administrator publishes your grade, it will appear here.
+              <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1 leading-relaxed">
+                Your coursework is undergoing academic assessment. Results will appear here immediately after formal publication by the Registry Examination Board.
               </p>
             </Card>
           ) : (
             <Card>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs sm:text-sm">
-                  <thead className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 font-semibold border-b border-zinc-200 dark:border-zinc-800">
+                  <thead className="bg-slate-900/90 text-slate-400 font-bold border-b border-white/[0.08]">
                     <tr>
-                      <th className="py-3 px-4">Module Code</th>
-                      <th className="py-3 px-4">Assessment Title</th>
-                      <th className="py-3 px-4">Numeric Score</th>
-                      <th className="py-3 px-4">Classification</th>
-                      <th className="py-3 px-4">Tutor Feedback</th>
-                      <th className="py-3 px-4 text-right">Published Date</th>
+                      <th className="py-3.5 px-5">Module Code</th>
+                      <th className="py-3.5 px-5">Assessment Title</th>
+                      <th className="py-3.5 px-5">Numeric Grade</th>
+                      <th className="py-3.5 px-5">Classification</th>
+                      <th className="py-3.5 px-5">Feedback & Remarks</th>
+                      <th className="py-3.5 px-5 text-right">Published Date</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                  <tbody className="divide-y divide-white/[0.05]">
                     {publishedGrades.map((grade: any) => (
                       <tr
                         key={grade.id}
-                        className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors"
+                        className="hover:bg-white/[0.03] transition-colors"
                       >
-                        <td className="py-3.5 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                        <td className="py-4 px-5 font-mono font-bold text-indigo-400">
                           {grade.assessment?.moduleCode}
                         </td>
-                        <td className="py-3.5 px-4 font-semibold text-zinc-900 dark:text-zinc-100">
+                        <td className="py-4 px-5 font-bold text-white">
                           {grade.assessment?.title}
                         </td>
-                        <td className="py-3.5 px-4">
-                          <span className="text-base font-bold text-zinc-900 dark:text-zinc-50">
+                        <td className="py-4 px-5">
+                          <span className="text-lg font-extrabold text-white">
                             {grade.numericGrade}%
                           </span>
                         </td>
-                        <td className="py-3.5 px-4">
+                        <td className="py-4 px-5">
                           <Badge
-                            className={getClassificationBadgeColor(
-                              grade.classification
-                            )}
+                            variant={
+                              grade.classification === "DISTINCTION"
+                                ? "success"
+                                : grade.classification === "MERIT"
+                                ? "info"
+                                : grade.classification === "PASS"
+                                ? "warning"
+                                : "danger"
+                            }
+                            dot
                           >
                             {getClassificationLabel(grade.classification)}
                           </Badge>
                         </td>
-                        <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-400 italic max-w-xs">
+                        <td className="py-4 px-5 text-slate-300 italic max-w-xs text-xs">
                           {grade.feedback || "Satisfactory academic performance."}
                         </td>
-                        <td className="py-3.5 px-4 text-right text-zinc-500 font-mono text-xs">
+                        <td className="py-4 px-5 text-right text-slate-400 font-mono text-xs">
                           {formatDate(grade.publishedAt)}
                         </td>
                       </tr>
@@ -465,46 +478,45 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
       {activeTab === "finance" && (
         <div className="space-y-4">
           <div>
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
-              My Student Ledger & Fees
+            <h3 className="text-lg font-bold text-white tracking-tight">
+              My Student Tuition Ledger
             </h3>
-            <p className="text-xs text-zinc-500">
-              Overview of programme tuition charges, recorded payments, and outstanding liability.
+            <p className="text-xs text-slate-400">
+              Overview of assigned programme tuition schedules, recorded receipts, and outstanding balance.
             </p>
           </div>
 
-          {/* Overdue Banner if applicable */}
           {student.isOverdue && (
             <Alert
               variant="danger"
-              title="Tuition Balance Overdue"
+              title="Tuition Payment Overdue"
             >
-              You have an outstanding balance of {formatCurrency(student.balance)} that is past the scheduled due date. Please contact the Registry Finance Desk.
+              You have an outstanding balance of {formatCurrency(student.balance)} that is past the scheduled due date. Please arrange settlement with the Registry Finance Desk.
             </Alert>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card className="p-4 bg-zinc-50/60 dark:bg-zinc-800/40">
-              <span className="text-xs text-zinc-500 uppercase font-semibold block">
+            <Card className="p-5 border-white/[0.08]">
+              <span className="text-xs text-slate-400 uppercase font-bold block">
                 Total Fees Assigned
               </span>
-              <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 mt-1 block">
+              <span className="text-2xl font-extrabold text-white mt-1.5 block">
                 {formatCurrency(student.totalFees)}
               </span>
             </Card>
-            <Card className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800">
-              <span className="text-xs text-emerald-800 dark:text-emerald-300 uppercase font-semibold block">
+            <Card className="p-5 border-emerald-500/25 bg-emerald-950/15">
+              <span className="text-xs text-emerald-400 uppercase font-bold block">
                 Total Payments Made
               </span>
-              <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mt-1 block">
+              <span className="text-2xl font-extrabold text-emerald-400 mt-1.5 block">
                 {formatCurrency(student.totalPaid)}
               </span>
             </Card>
-            <Card className="p-4 bg-rose-50/60 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800">
-              <span className="text-xs text-rose-800 dark:text-rose-300 uppercase font-semibold block">
+            <Card className="p-5 border-rose-500/25 bg-rose-950/15">
+              <span className="text-xs text-rose-400 uppercase font-bold block">
                 Outstanding Balance
               </span>
-              <span className="text-2xl font-bold text-rose-700 dark:text-rose-300 mt-1 block">
+              <span className="text-2xl font-extrabold text-rose-400 mt-1.5 block">
                 {formatCurrency(student.balance)}
               </span>
             </Card>
@@ -517,36 +529,38 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
             </CardHeader>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm">
-                <thead className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 font-semibold border-b border-zinc-200 dark:border-zinc-800">
+                <thead className="bg-slate-900/90 text-slate-400 font-bold border-b border-white/[0.08]">
                   <tr>
-                    <th className="py-2.5 px-4">Transaction Reference</th>
-                    <th className="py-2.5 px-4">Date</th>
-                    <th className="py-2.5 px-4">Method</th>
-                    <th className="py-2.5 px-4">Notes</th>
-                    <th className="py-2.5 px-4 text-right">Amount Paid</th>
+                    <th className="py-3.5 px-5">Transaction Reference</th>
+                    <th className="py-3.5 px-5">Date</th>
+                    <th className="py-3.5 px-5">Method</th>
+                    <th className="py-3.5 px-5">Notes</th>
+                    <th className="py-3.5 px-5 text-right">Amount Paid</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                <tbody className="divide-y divide-white/[0.05]">
                   {student.payments?.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-6 text-center text-zinc-500">
-                        No payment records found.
+                      <td colSpan={5} className="py-8 text-center text-slate-400">
+                        No payment records registered yet.
                       </td>
                     </tr>
                   ) : (
                     student.payments?.map((p: any) => (
                       <tr key={p.id}>
-                        <td className="py-2.5 px-4 font-mono font-bold text-zinc-800 dark:text-zinc-200">
+                        <td className="py-3.5 px-5 font-mono font-bold text-indigo-300">
                           {p.referenceNumber}
                         </td>
-                        <td className="py-2.5 px-4 text-zinc-600 dark:text-zinc-400">
+                        <td className="py-3.5 px-5 text-slate-300">
                           {formatDate(p.paymentDate)}
                         </td>
-                        <td className="py-2.5 px-4">{p.paymentMethod}</td>
-                        <td className="py-2.5 px-4 text-zinc-500 italic">
+                        <td className="py-3.5 px-5">
+                          <Badge variant="outline">{p.paymentMethod}</Badge>
+                        </td>
+                        <td className="py-3.5 px-5 text-slate-400 italic">
                           {p.notes || "Tuition fee settlement"}
                         </td>
-                        <td className="py-2.5 px-4 text-right font-bold text-emerald-600">
+                        <td className="py-3.5 px-5 text-right font-extrabold text-emerald-400">
                           +{formatCurrency(p.amount)}
                         </td>
                       </tr>
@@ -565,47 +579,48 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
         onClose={() => setIsUploadModalOpen(false)}
         title={
           activeAssessmentForUpload
-            ? `Submit: ${activeAssessmentForUpload.title}`
+            ? `Submit Deliverable: ${activeAssessmentForUpload.title}`
             : "Upload Assessment Submission"
         }
-        description="Select and submit your coursework file. Strictly restricted to PDF (.pdf) or Word document (.docx, .doc)."
+        description="Select and submit your coursework file. Restricted strictly to PDF (.pdf) or Word document (.docx, .doc)."
         maxWidth="md"
       >
         <form onSubmit={handleFileUpload} className="space-y-4">
           {uploadError && (
-            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg">
+            <div className="p-3 bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs rounded-xl">
               {uploadError}
             </div>
           )}
 
           {uploadSuccess && (
-            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs rounded-lg flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 shrink-0" />
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs rounded-xl flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" />
               <span>{uploadSuccess}</span>
             </div>
           )}
 
           {activeAssessmentForUpload && (
-            <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg text-xs space-y-1">
-              <span className="font-semibold text-zinc-900 dark:text-zinc-100 block">
+            <div className="p-3.5 bg-slate-900 rounded-xl border border-white/10 text-xs space-y-1">
+              <span className="font-bold text-white block">
                 {activeAssessmentForUpload.moduleCode} —{" "}
                 {activeAssessmentForUpload.moduleName}
               </span>
-              <span className="text-zinc-500 block">
+              <span className="text-slate-400 block">
                 Submission Deadline:{" "}
                 {formatDateTime(activeAssessmentForUpload.deadline)}
               </span>
               {isPastDate(activeAssessmentForUpload.deadline) && (
-                <div className="text-amber-600 font-semibold pt-1">
-                  ⚠️ Note: Deadline has passed. Your submission will be recorded and visually flagged as LATE.
+                <div className="text-amber-400 font-bold pt-1 flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  <span>Notice: Deadline passed. Submission will be accepted but visually flagged as LATE.</span>
                 </div>
               )}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-              Select File (PDF or DOCX only) *
+            <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              Select Document File (PDF or DOCX only) *
             </label>
             <input
               type="file"
@@ -616,30 +631,30 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
                   setSelectedFile(e.target.files[0]);
                 }
               }}
-              className="w-full text-xs text-zinc-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-950 dark:file:text-indigo-300 cursor-pointer"
+              className="w-full text-xs text-slate-400 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer"
             />
             {selectedFile && (
-              <p className="text-[11px] text-zinc-500 mt-1">
-                Selected: <strong>{selectedFile.name}</strong> (
+              <p className="text-[11px] text-slate-400 mt-1.5">
+                File: <strong className="text-white">{selectedFile.name}</strong> (
                 {(selectedFile.size / 1024).toFixed(1)} KB)
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-bold text-slate-300 mb-1.5">
               Submission Remarks (Optional)
             </label>
             <input
               type="text"
-              placeholder="e.g., Final draft including appendix and references"
+              placeholder="e.g. Final draft with citations and data appendix"
               value={uploadNotes}
               onChange={(e) => setUploadNotes(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/[0.08]">
             <Button
               type="button"
               variant="outline"
@@ -647,9 +662,9 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
             >
               Cancel
             </Button>
-            <Button type="submit" isLoading={isUploading}>
+            <Button type="submit" variant="gradient" isLoading={isUploading}>
               <UploadCloud className="w-4 h-4 mr-1.5" />
-              Submit Assessment
+              Upload & Submit
             </Button>
           </div>
         </form>

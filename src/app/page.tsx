@@ -151,14 +151,20 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950/50 py-4 text-center text-xs text-zinc-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>
-            PEN Global Registry Module • Built with Next.js App Router, Prisma ORM & PostgreSQL
-          </span>
-          <span className="font-mono text-[11px] text-zinc-400">
-            Role Mode: {role === "staff" ? "Registry Administrator (Staff)" : "Student Self-Service"}
-          </span>
+      <footer className="border-t border-white/[0.06] bg-[#0b0e17]/80 backdrop-blur-xl py-5 text-center text-xs text-slate-400">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold text-white">RegistryOS</span>
+            <span className="text-slate-500">•</span>
+            <span>PEN Global Higher Education Management</span>
+          </div>
+          <div className="flex items-center gap-3 text-[11px] font-mono text-slate-500">
+            <span>Next.js 16 (App Router)</span>
+            <span>•</span>
+            <span>PostgreSQL 18</span>
+            <span>•</span>
+            <span>Prisma ORM</span>
+          </div>
         </div>
       </footer>
     </div>

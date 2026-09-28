@@ -15,12 +15,14 @@ import {
   FileText,
   CheckCircle,
   X,
+  Sparkles,
+  AlertTriangle,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
-import { formatCurrency, formatDate, getStatusBadgeColor } from "@/lib/formatters";
+import { formatCurrency, formatDate } from "@/lib/formatters";
 
 interface EnrolmentWorkflowProps {
   students: any[];
@@ -84,7 +86,21 @@ export function EnrolmentWorkflow({
     return matchesSearch && matchesProgramme && matchesStatus && matchesOverdue;
   });
 
-  // Handle student creation
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "ENROLLED":
+        return <Badge variant="success" dot>Enrolled</Badge>;
+      case "DEFERRED":
+        return <Badge variant="warning" dot>Deferred</Badge>;
+      case "WITHDRAWN":
+        return <Badge variant="danger" dot>Withdrawn</Badge>;
+      case "COMPLETED":
+        return <Badge variant="purple" dot>Completed</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
   const handleCreateStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -119,7 +135,6 @@ export function EnrolmentWorkflow({
     }
   };
 
-  // Handle status update
   const handleUpdateStatus = async () => {
     if (!selectedStudent) return;
     setIsSubmitting(true);
@@ -144,205 +159,236 @@ export function EnrolmentWorkflow({
   );
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Workflow Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Student Enrolment Registry
-          </h2>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-            Add, verify, and maintain student records with auto-generated IDs and fee schedules.
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              Student Enrolment Registry
+            </h2>
+            <Badge variant="purple">{students.length} Total Registered</Badge>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Register students with auto-generated IDs, assign programme fee schedules, and filter active records.
           </p>
         </div>
-        <Button onClick={() => setIsEnrolModalOpen(true)} className="shrink-0">
+        <Button onClick={() => setIsEnrolModalOpen(true)} variant="gradient" className="shrink-0">
           <UserPlus className="w-4 h-4 mr-2" />
           Enrol New Student
         </Button>
       </div>
 
       {/* Filter and Search Bar */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            {/* Search */}
-            <div className="relative lg:col-span-2">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by name, student ID, or email..."
-                className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-
-            {/* Programme Filter */}
-            <div>
-              <select
-                value={selectedProgramme}
-                onChange={(e) => setSelectedProgramme(e.target.value)}
-                className="w-full px-3 py-2 text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-              >
-                <option value="all">All Programmes</option>
-                {programmes.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.code} - {p.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Status Filter */}
-            <div>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-3 py-2 text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-              >
-                <option value="all">All Enrolment Statuses</option>
-                <option value="ENROLLED">Enrolled</option>
-                <option value="DEFERRED">Deferred</option>
-                <option value="WITHDRAWN">Withdrawn</option>
-                <option value="COMPLETED">Completed</option>
-              </select>
-            </div>
-
-            {/* Overdue Only Toggle */}
-            <div className="flex items-center">
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-zinc-700 dark:text-zinc-300 select-none">
-                <input
-                  type="checkbox"
-                  checked={overdueOnly}
-                  onChange={(e) => setOverdueOnly(e.target.checked)}
-                  className="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4"
-                />
-                <span>Overdue Fees Only</span>
-              </label>
-            </div>
+      <Card className="p-4 sm:p-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {/* Search */}
+          <div className="relative lg:col-span-2">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by name, student ID, or email..."
+              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-900/90 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
           </div>
-        </CardContent>
+
+          {/* Programme Filter */}
+          <div>
+            <select
+              value={selectedProgramme}
+              onChange={(e) => setSelectedProgramme(e.target.value)}
+              className="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-900/90 border border-white/10 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+            >
+              <option value="all" className="bg-[#111625]">All Programmes</option>
+              {programmes.map((p) => (
+                <option key={p.id} value={p.id} className="bg-[#111625]">
+                  {p.code} - {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-900/90 border border-white/10 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+            >
+              <option value="all" className="bg-[#111625]">All Statuses</option>
+              <option value="ENROLLED" className="bg-[#111625]">Enrolled</option>
+              <option value="DEFERRED" className="bg-[#111625]">Deferred</option>
+              <option value="WITHDRAWN" className="bg-[#111625]">Withdrawn</option>
+              <option value="COMPLETED" className="bg-[#111625]">Completed</option>
+            </select>
+          </div>
+
+          {/* Overdue Only Toggle */}
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={() => setOverdueOnly(!overdueOnly)}
+              className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                overdueOnly
+                  ? "bg-rose-500/20 border-rose-500/40 text-rose-300"
+                  : "bg-slate-900/70 border-white/10 text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <AlertTriangle className={`w-3.5 h-3.5 ${overdueOnly ? "text-rose-400" : "text-slate-500"}`} />
+              <span>Overdue Only</span>
+            </button>
+          </div>
+        </div>
       </Card>
 
       {/* Student Records Table */}
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm">
-            <thead className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 font-semibold border-b border-zinc-200 dark:border-zinc-800">
+            <thead className="bg-slate-900/90 text-slate-400 font-bold border-b border-white/[0.08]">
               <tr>
-                <th className="py-3.5 px-4">Student ID</th>
-                <th className="py-3.5 px-4">Full Name & Email</th>
-                <th className="py-3.5 px-4">Programme</th>
-                <th className="py-3.5 px-4">Academic Year</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4">Fee Balance</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-4 px-5">Student</th>
+                <th className="py-4 px-5">Student ID</th>
+                <th className="py-4 px-5">Programme</th>
+                <th className="py-4 px-5">Academic Year</th>
+                <th className="py-4 px-5">Status</th>
+                <th className="py-4 px-5">Tuition Balance</th>
+                <th className="py-4 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+            <tbody className="divide-y divide-white/[0.05]">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-zinc-500">
-                    <div className="animate-spin inline-block w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full mb-2" />
-                    <p>Loading student directory...</p>
+                  <td colSpan={7} className="py-16 text-center text-slate-400">
+                    <div className="animate-spin inline-block w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full mb-2" />
+                    <p>Loading student directory from PostgreSQL...</p>
                   </td>
                 </tr>
               ) : filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-zinc-500">
-                    No student records match the active search or filter criteria.
+                  <td colSpan={7} className="py-16 text-center text-slate-400">
+                    No student records found matching the active filters.
                   </td>
                 </tr>
               ) : (
-                filteredStudents.map((student) => (
-                  <tr
-                    key={student.id}
-                    className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors"
-                  >
-                    <td className="py-3.5 px-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                      {student.studentId}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-zinc-900 dark:text-zinc-100">
-                        {student.fullName}
-                      </div>
-                      <div className="text-zinc-500 dark:text-zinc-400 text-xs">
-                        {student.email}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-medium text-zinc-900 dark:text-zinc-100">
-                        {student.programme?.code}
-                      </div>
-                      <div className="text-[11px] text-zinc-500 max-w-[200px] truncate">
-                        {student.programme?.name}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-300">
-                      {student.academicYear}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <Badge className={getStatusBadgeColor(student.status)}>
-                        {student.status}
-                      </Badge>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={`font-semibold ${
-                            student.balance > 0
-                              ? "text-zinc-900 dark:text-zinc-100"
-                              : "text-emerald-600 dark:text-emerald-400"
-                          }`}
-                        >
-                          {formatCurrency(student.balance)}
-                        </span>
-                        {student.isOverdue && (
-                          <Badge variant="danger" className="text-[10px] py-0 px-1.5">
-                            OVERDUE
-                          </Badge>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedStudent(student);
-                            setIsDetailModalOpen(true);
-                          }}
-                          title="View Full Student Record"
-                          className="p-1.5 rounded-lg text-zinc-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-zinc-800 transition-colors"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedStudent(student);
-                            setStatusToUpdate(student.status);
-                            setIsStatusEditOpen(true);
-                          }}
-                          title="Change Enrolment Status"
-                          className="p-1.5 rounded-lg text-zinc-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-zinc-800 transition-colors"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        {student.balance > 0 && (
+                filteredStudents.map((student) => {
+                  const initials = student.fullName
+                    .split(" ")
+                    .map((n: string) => n[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase();
+
+                  return (
+                    <tr
+                      key={student.id}
+                      className="hover:bg-white/[0.03] transition-colors"
+                    >
+                      {/* Avatar & Name */}
+                      <td className="py-4 px-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white font-bold text-xs flex items-center justify-center shadow-md shrink-0">
+                            {initials}
+                          </div>
+                          <div>
+                            <div className="font-bold text-white">
+                              {student.fullName}
+                            </div>
+                            <div className="text-slate-400 text-xs">
+                              {student.email}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* ID */}
+                      <td className="py-4 px-5 font-mono font-bold text-indigo-400">
+                        {student.studentId}
+                      </td>
+
+                      {/* Programme */}
+                      <td className="py-4 px-5">
+                        <div className="font-semibold text-slate-200">
+                          {student.programme?.code}
+                        </div>
+                        <div className="text-[11px] text-slate-400 truncate max-w-[180px]">
+                          {student.programme?.name}
+                        </div>
+                      </td>
+
+                      {/* Year */}
+                      <td className="py-4 px-5 text-slate-300 font-medium">
+                        {student.academicYear}
+                      </td>
+
+                      {/* Status */}
+                      <td className="py-4 px-5">
+                        {getStatusBadge(student.status)}
+                      </td>
+
+                      {/* Balance & Overdue Flag */}
+                      <td className="py-4 px-5">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`font-bold ${
+                              student.balance > 0
+                                ? "text-slate-200"
+                                : "text-emerald-400"
+                            }`}
+                          >
+                            {formatCurrency(student.balance)}
+                          </span>
+                          {student.isOverdue && (
+                            <Badge variant="danger" dot className="text-[10px] py-0 px-2">
+                              OVERDUE
+                            </Badge>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-4 px-5 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
-                            onClick={() => onOpenPaymentModal(student.id)}
-                            title="Record Payment"
-                            className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-zinc-800 transition-colors"
+                            onClick={() => {
+                              setSelectedStudent(student);
+                              setIsDetailModalOpen(true);
+                            }}
+                            title="Inspect Student Dossier"
+                            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
                           >
-                            <CreditCard className="w-4 h-4" />
+                            <Eye className="w-4 h-4" />
                           </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedStudent(student);
+                              setStatusToUpdate(student.status);
+                              setIsStatusEditOpen(true);
+                            }}
+                            title="Change Enrolment Status"
+                            className="p-2 rounded-xl text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          {student.balance > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => onOpenPaymentModal(student.id)}
+                              title="Record Payment"
+                              className="p-2 rounded-xl text-emerald-400 hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                            >
+                              <CreditCard className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -353,50 +399,50 @@ export function EnrolmentWorkflow({
       <Modal
         isOpen={isEnrolModalOpen}
         onClose={() => setIsEnrolModalOpen(false)}
-        title="Enrol New Student"
-        description="Create an official student record in the registry database. A unique Student ID will be generated automatically."
+        title="Enrol New Student Record"
+        description="Register a student into the PEN Global Registry. Unique Student ID will be generated automatically."
         maxWidth="lg"
       >
         <form onSubmit={handleCreateStudent} className="space-y-4">
           {formError && (
-            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg">
+            <div className="p-3 bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs rounded-xl">
               {formError}
             </div>
           )}
 
-          <div className="p-3 bg-indigo-50/70 dark:bg-indigo-950/40 rounded-xl border border-indigo-200 dark:border-indigo-800 flex items-center justify-between">
+          <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/25 flex items-center justify-between">
             <div>
-              <span className="text-xs text-zinc-500 uppercase tracking-wider font-semibold block">
-                Auto-Generated Student ID
+              <span className="text-[10px] text-indigo-300 uppercase tracking-wider font-bold block">
+                Next Auto-Generated Student ID
               </span>
-              <span className="font-mono font-bold text-indigo-700 dark:text-indigo-300 text-base">
-                SMS-2025-XXXX (Sequential Next)
+              <span className="font-mono font-extrabold text-white text-base">
+                SMS-2025-XXXX (Sequential Sequence)
               </span>
             </div>
-            <span className="text-[11px] text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-900 px-2.5 py-1 rounded-md border border-indigo-200 font-medium">
-              System Generated
+            <span className="text-[10px] font-bold text-indigo-300 bg-indigo-500/20 px-3 py-1 rounded-full border border-indigo-500/30">
+              System Assigned
             </span>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-bold text-slate-300 mb-1.5">
               Full Legal Name *
             </label>
             <input
               type="text"
               required
-              placeholder="e.g., Jonathan Edwards"
+              placeholder="e.g. Jonathan Edwards"
               value={formData.fullName}
               onChange={(e) =>
                 setFormData({ ...formData, fullName: e.target.value })
               }
-              className="w-full px-3 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-xs font-bold text-slate-300 mb-1.5">
                 Institutional Email *
               </label>
               <input
@@ -407,11 +453,11 @@ export function EnrolmentWorkflow({
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="w-full px-3 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-xs font-bold text-slate-300 mb-1.5">
                 Date of Birth *
               </label>
               <input
@@ -421,14 +467,14 @@ export function EnrolmentWorkflow({
                 onChange={(e) =>
                   setFormData({ ...formData, dateOfBirth: e.target.value })
                 }
-                className="w-full px-3 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-xs font-bold text-slate-300 mb-1.5">
                 Academic Programme *
               </label>
               <select
@@ -436,17 +482,17 @@ export function EnrolmentWorkflow({
                 onChange={(e) =>
                   setFormData({ ...formData, programmeId: e.target.value })
                 }
-                className="w-full px-3 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
               >
                 {programmes.map((p) => (
-                  <option key={p.id} value={p.id}>
+                  <option key={p.id} value={p.id} className="bg-[#111625]">
                     {p.code} - {p.name}
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+              <label className="block text-xs font-bold text-slate-300 mb-1.5">
                 Academic Year *
               </label>
               <input
@@ -457,43 +503,43 @@ export function EnrolmentWorkflow({
                 onChange={(e) =>
                   setFormData({ ...formData, academicYear: e.target.value })
                 }
-                className="w-full px-3 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-              Initial Enrolment Status *
+            <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              Enrolment Status *
             </label>
             <select
               value={formData.status}
               onChange={(e) =>
                 setFormData({ ...formData, status: e.target.value })
               }
-              className="w-full px-3 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
             >
-              <option value="ENROLLED">Enrolled (Active)</option>
-              <option value="DEFERRED">Deferred</option>
-              <option value="WITHDRAWN">Withdrawn</option>
-              <option value="COMPLETED">Completed</option>
+              <option value="ENROLLED" className="bg-[#111625]">Enrolled (Active)</option>
+              <option value="DEFERRED" className="bg-[#111625]">Deferred</option>
+              <option value="WITHDRAWN" className="bg-[#111625]">Withdrawn</option>
+              <option value="COMPLETED" className="bg-[#111625]">Completed</option>
             </select>
           </div>
 
           {selectedProgrammeDetails && (
-            <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 text-xs text-zinc-600 dark:text-zinc-400">
-              <span className="font-semibold text-zinc-900 dark:text-zinc-100 block">
-                Automatic Fee Assignment:
+            <div className="p-3.5 bg-slate-900/80 rounded-xl border border-white/10 text-xs text-slate-300 leading-relaxed">
+              <span className="font-bold text-white block mb-0.5">
+                Automatic Tuition Fee Assignment:
               </span>
-              Enrolling in {selectedProgrammeDetails.name} will automatically assign standard tuition of{" "}
-              <strong className="text-indigo-600 dark:text-indigo-400">
+              Enrolling in {selectedProgrammeDetails.name} will automatically create a fee schedule of{" "}
+              <strong className="text-indigo-400">
                 {formatCurrency(selectedProgrammeDetails.standardFee)}
               </strong>{" "}
               due in 30 days.
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/[0.08]">
             <Button
               type="button"
               variant="outline"
@@ -501,7 +547,7 @@ export function EnrolmentWorkflow({
             >
               Cancel
             </Button>
-            <Button type="submit" isLoading={isSubmitting}>
+            <Button type="submit" variant="gradient" isLoading={isSubmitting}>
               Complete Enrolment
             </Button>
           </div>
@@ -518,22 +564,22 @@ export function EnrolmentWorkflow({
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-bold text-slate-300 mb-1.5">
               Select New Enrolment Status
             </label>
             <select
               value={statusToUpdate}
               onChange={(e) => setStatusToUpdate(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
             >
-              <option value="ENROLLED">Enrolled (Active)</option>
-              <option value="DEFERRED">Deferred</option>
-              <option value="WITHDRAWN">Withdrawn</option>
-              <option value="COMPLETED">Completed</option>
+              <option value="ENROLLED" className="bg-[#111625]">Enrolled (Active)</option>
+              <option value="DEFERRED" className="bg-[#111625]">Deferred</option>
+              <option value="WITHDRAWN" className="bg-[#111625]">Withdrawn</option>
+              <option value="COMPLETED" className="bg-[#111625]">Completed</option>
             </select>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/[0.08]">
             <Button
               type="button"
               variant="outline"
@@ -541,14 +587,14 @@ export function EnrolmentWorkflow({
             >
               Cancel
             </Button>
-            <Button onClick={handleUpdateStatus} isLoading={isSubmitting}>
+            <Button onClick={handleUpdateStatus} variant="gradient" isLoading={isSubmitting}>
               Update Status
             </Button>
           </div>
         </div>
       </Modal>
 
-      {/* Student Full Record Detail Modal */}
+      {/* Student Dossier Modal */}
       <Modal
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
@@ -556,23 +602,21 @@ export function EnrolmentWorkflow({
         maxWidth="xl"
       >
         {selectedStudent && (
-          <div className="space-y-5">
+          <div className="space-y-5 text-slate-200">
             {/* Header info */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl border border-zinc-200 dark:border-zinc-700 gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-slate-900/80 border border-white/10 gap-3">
               <div>
-                <span className="font-mono text-xs text-indigo-600 font-bold block">
+                <span className="font-mono text-xs text-indigo-400 font-bold block">
                   {selectedStudent.studentId}
                 </span>
-                <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
+                <h3 className="text-xl font-bold text-white">
                   {selectedStudent.fullName}
                 </h3>
-                <span className="text-xs text-zinc-500">{selectedStudent.email}</span>
+                <span className="text-xs text-slate-400">{selectedStudent.email}</span>
               </div>
               <div className="text-right">
-                <Badge className={getStatusBadgeColor(selectedStudent.status)}>
-                  {selectedStudent.status}
-                </Badge>
-                <div className="text-xs text-zinc-500 mt-1">
+                {getStatusBadge(selectedStudent.status)}
+                <div className="text-xs text-slate-500 mt-1">
                   Enrolled: {formatDate(selectedStudent.createdAt)}
                 </div>
               </div>
@@ -580,31 +624,29 @@ export function EnrolmentWorkflow({
 
             {/* Quick Details Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                <span className="text-zinc-500 block">Programme</span>
-                <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+              <div className="p-3.5 bg-slate-900/60 border border-white/[0.06] rounded-xl">
+                <span className="text-slate-400 block mb-0.5">Programme</span>
+                <span className="font-bold text-white">
                   {selectedStudent.programme?.code}
                 </span>
               </div>
-              <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                <span className="text-zinc-500 block">Academic Year</span>
-                <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+              <div className="p-3.5 bg-slate-900/60 border border-white/[0.06] rounded-xl">
+                <span className="text-slate-400 block mb-0.5">Academic Year</span>
+                <span className="font-bold text-white">
                   {selectedStudent.academicYear}
                 </span>
               </div>
-              <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                <span className="text-zinc-500 block">Date of Birth</span>
-                <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+              <div className="p-3.5 bg-slate-900/60 border border-white/[0.06] rounded-xl">
+                <span className="text-slate-400 block mb-0.5">Date of Birth</span>
+                <span className="font-bold text-white">
                   {formatDate(selectedStudent.dateOfBirth)}
                 </span>
               </div>
-              <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                <span className="text-zinc-500 block">Outstanding Fee</span>
+              <div className="p-3.5 bg-slate-900/60 border border-white/[0.06] rounded-xl">
+                <span className="text-slate-400 block mb-0.5">Fee Balance</span>
                 <span
-                  className={`font-semibold ${
-                    selectedStudent.balance > 0
-                      ? "text-rose-600 dark:text-rose-400 font-bold"
-                      : "text-emerald-600"
+                  className={`font-bold ${
+                    selectedStudent.balance > 0 ? "text-rose-400" : "text-emerald-400"
                   }`}
                 >
                   {formatCurrency(selectedStudent.balance)}
@@ -612,36 +654,36 @@ export function EnrolmentWorkflow({
               </div>
             </div>
 
-            {/* Submissions & Grades list */}
+            {/* Assessment Grades */}
             <div>
-              <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
-                Assessment Grades & Submissions
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                Assessment Grades Recorded
               </h4>
               {selectedStudent.grades?.length === 0 ? (
-                <p className="text-xs text-zinc-500 italic p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                  No graded assessments recorded for this student yet.
+                <p className="text-xs text-slate-500 italic p-4 bg-slate-900/50 rounded-xl border border-white/[0.04]">
+                  No grades recorded for this student yet.
                 </p>
               ) : (
                 <div className="space-y-2">
                   {selectedStudent.grades?.map((g: any) => (
                     <div
                       key={g.id}
-                      className="p-3 bg-zinc-50 dark:bg-zinc-800/80 rounded-lg border border-zinc-200 dark:border-zinc-700 flex items-center justify-between text-xs"
+                      className="p-3 bg-slate-900/80 rounded-xl border border-white/[0.06] flex items-center justify-between text-xs"
                     >
                       <div>
-                        <span className="font-bold text-zinc-900 dark:text-zinc-100 block">
+                        <span className="font-bold text-white block">
                           {g.assessment?.title}
                         </span>
-                        <span className="text-zinc-500 font-mono">
+                        <span className="text-slate-400 font-mono">
                           {g.assessment?.moduleCode}
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-bold text-base text-zinc-900 dark:text-zinc-50">
+                        <span className="font-bold text-base text-white">
                           {g.numericGrade}%
                         </span>
                         <Badge variant="outline">{g.classification}</Badge>
-                        <Badge variant={g.isPublished ? "success" : "warning"}>
+                        <Badge variant={g.isPublished ? "success" : "warning"} dot>
                           {g.isPublished ? "Published" : "Withheld"}
                         </Badge>
                       </div>
