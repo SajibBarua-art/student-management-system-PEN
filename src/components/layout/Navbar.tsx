@@ -46,10 +46,10 @@ export function Navbar({
 }: NavbarProps) {
   const staffTabs = [
     { id: "overview", label: "Executive Dashboard", icon: Layers },
-    { id: "enrolment", label: "1. Student Enrolment", icon: Users2 },
-    { id: "fees", label: "2. Fees & Ledger", icon: Receipt },
-    { id: "assessments", label: "3. Assessments", icon: FileCheck2 },
-    { id: "marksheet", label: "4. Marksheet & Results", icon: Award },
+    { id: "enrolment", label: "Student Enrolment", icon: Users2 },
+    { id: "fees", label: "Fees & Ledger", icon: Receipt },
+    { id: "assessments", label: "Assessments", icon: FileCheck2 },
+    { id: "marksheet", label: "Marksheet & Results", icon: Award },
   ];
 
   const currentStudent = students.find((s) => s.id === activeStudentId);
@@ -101,11 +101,10 @@ export function Navbar({
               <button
                 type="button"
                 onClick={() => onRoleChange("staff")}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
-                  role === "staff"
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${role === "staff"
                     ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/30"
                     : "text-slate-400 hover:text-white"
-                }`}
+                  }`}
               >
                 <ShieldCheck className="w-4 h-4" />
                 <span>Staff View</span>
@@ -114,11 +113,10 @@ export function Navbar({
               <button
                 type="button"
                 onClick={() => onRoleChange("student")}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
-                  role === "student"
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${role === "student"
                     ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/30"
                     : "text-slate-400 hover:text-white"
-                }`}
+                  }`}
               >
                 <GraduationCap className="w-4 h-4" />
                 <span>Student View</span>
@@ -169,16 +167,14 @@ export function Navbar({
                 <button
                   key={tab.id}
                   onClick={() => onStaffTabChange(tab.id)}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-xl whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                    isActive
+                  className={`flex items-center gap-2 px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-xl whitespace-nowrap transition-all duration-200 cursor-pointer ${isActive
                       ? "bg-white/[0.09] text-white border border-white/15 shadow-sm shadow-indigo-500/10"
                       : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
-                  }`}
+                    }`}
                 >
                   <Icon
-                    className={`w-4 h-4 ${
-                      isActive ? "text-indigo-400" : "text-slate-500"
-                    }`}
+                    className={`w-4 h-4 ${isActive ? "text-indigo-400" : "text-slate-500"
+                      }`}
                   />
                   <span>{tab.label}</span>
                 </button>
