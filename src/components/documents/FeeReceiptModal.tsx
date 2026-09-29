@@ -5,91 +5,13 @@ import { Printer, X, ShieldCheck, Building2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/formatters";
 import { printDocument } from "@/lib/print-document";
+import { DocumentQrCode } from "@/components/documents/DocumentQrCode";
 
 interface FeeReceiptModalProps {
   isOpen: boolean;
   onClose: () => void;
   payment: any;
   student: any;
-}
-
-/**
- * Deterministic pseudo-random SVG QR Code generator for receipt verification
- */
-function DocumentQrCode({ value, size = 90 }: { value: string; size?: number }) {
-  let hash = 0;
-  for (let i = 0; i < value.length; i++) {
-    hash = (hash << 5) - hash + value.charCodeAt(i);
-    hash |= 0;
-  }
-
-  const matrixSize = 21;
-  const cellSize = size / matrixSize;
-
-  const cells: boolean[][] = Array.from({ length: matrixSize }, () =>
-    Array(matrixSize).fill(false)
-  );
-
-  const drawCorner = (startRow: number, startCol: number) => {
-    for (let r = 0; r < 7; r++) {
-      for (let c = 0; c < 7; c++) {
-        const isBorder = r === 0 || r === 6 || c === 0 || c === 6;
-        const isInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
-        cells[startRow + r][startCol + c] = isBorder || isInner;
-      }
-    }
-  };
-
-  drawCorner(0, 0);
-  drawCorner(0, matrixSize - 7);
-  drawCorner(matrixSize - 7, 0);
-
-  // Timing rails
-  for (let i = 8; i < matrixSize - 8; i++) {
-    cells[6][i] = i % 2 === 0;
-    cells[i][6] = i % 2 === 0;
-  }
-
-  let seed = Math.abs(hash);
-  for (let r = 0; r < matrixSize; r++) {
-    for (let c = 0; c < matrixSize; c++) {
-      if (
-        (r < 8 && c < 8) ||
-        (r < 8 && c >= matrixSize - 8) ||
-        (r >= matrixSize - 8 && c < 8) ||
-        r === 6 ||
-        c === 6
-      ) {
-        continue;
-      }
-      seed = (seed * 9301 + 49297) % 233280;
-      cells[r][c] = seed / 233280 > 0.5;
-    }
-  }
-
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      className="border border-slate-300 dark:border-white/20 p-1 bg-white rounded-md shadow-sm"
-    >
-      {cells.map((row, r) =>
-        row.map((active, c) =>
-          active ? (
-            <rect
-              key={`${r}-${c}`}
-              x={c * cellSize}
-              y={r * cellSize}
-              width={cellSize}
-              height={cellSize}
-              fill="#0f172a"
-            />
-          ) : null
-        )
-      )}
-    </svg>
-  );
 }
 
 /**
@@ -178,12 +100,14 @@ export function FeeReceiptModal({
   if (!isOpen || !payment) return null;
 
   const receiptSerial = `REC-${new Date(payment.paymentDate || Date.now()).getFullYear()}-${(payment.id || "000000").slice(0, 8).toUpperCase()}`;
-  const verificationUrl = `https://finance.university.ac.uk/verify?receipt=${receiptSerial}&ref=${payment.reference}`;
+  const baseUrl = typeof window !== "undefined" && window.location.origin ? window.location.origin : "http://localhost:3000";
+  const receiptRef = payment.referenceNumber || payment.reference || payment.id;
+  const verificationUrl = `${baseUrl}/verify?type=receipt&serial=${receiptSerial}&ref=${receiptRef}&studentId=${student?.studentId || ""}`;
 
   const handlePrint = () => {
     printDocument(
       "official-receipt-document",
-      `Payment_Receipt_${payment.reference || payment.id}`
+      `Payment_Receipt_${receiptRef}`
     );
   };
 
