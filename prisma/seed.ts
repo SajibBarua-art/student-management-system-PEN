@@ -62,7 +62,7 @@ async function main() {
     },
   });
 
-  console.log("✅ Seeded 3 programmes.");
+  console.log("Seeded 3 programmes.");
 
   // 2. Create Assessments
   const pastDeadline = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
@@ -126,7 +126,7 @@ async function main() {
     },
   });
 
-  console.log("✅ Seeded 4 assessments.");
+  console.log("Seeded 4 assessments.");
 
   // 3. Create Students with assigned fees, payments, submissions & grades
   // Student 1: Amina Rahman (Enrolled, BSC-CS, fully paid, Distinction grades published)
@@ -495,13 +495,13 @@ async function main() {
     ],
   });
 
-  console.log("✅ Seeded 6 students with full fees, payments, submissions, grades & audit trail.");
-  console.log("🎉 Seeding complete successfully!");
+  console.log("Seeded 6 students with full fees, payments, submissions, grades & audit trail.");
+  console.log("Seeding complete successfully!");
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Error while seeding:", e);
+    console.error("Error while seeding:", e);
     process.exit(1);
   })
   .finally(async () => {
