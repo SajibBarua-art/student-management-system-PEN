@@ -15,6 +15,12 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
+export type InstitutionalPersona =
+  | "REGISTRY_ADMIN"
+  | "MODULE_LEADER"
+  | "BURSAR_FINANCE"
+  | "STUDENT";
+
 interface StudentPersona {
   id: string;
   studentId: string;
@@ -27,6 +33,8 @@ interface StudentPersona {
 interface NavbarProps {
   role: "staff" | "student";
   onRoleChange: (newRole: "staff" | "student") => void;
+  persona: InstitutionalPersona;
+  onPersonaChange: (newPersona: InstitutionalPersona) => void;
   students: StudentPersona[];
   activeStudentId: string | null;
   onStudentChange: (id: string) => void;
@@ -37,22 +45,71 @@ interface NavbarProps {
 export function Navbar({
   role,
   onRoleChange,
+  persona,
+  onPersonaChange,
   students,
   activeStudentId,
   onStudentChange,
   activeStaffTab,
   onStaffTabChange,
 }: NavbarProps) {
-  const staffTabs = [
-    { id: "overview", label: "Executive Dashboard", icon: Layers },
-    { id: "enrolment", label: "Student Enrolment", icon: Users2 },
-    { id: "fees", label: "Fees & Ledger", icon: Receipt },
-    { id: "assessments", label: "Assessments", icon: FileCheck2 },
-    { id: "marksheet", label: "Marksheet & Results", icon: Award },
-    { id: "audit", label: "Registry Audit Trail", icon: ShieldCheck },
+  const allStaffTabs = [
+    {
+      id: "overview",
+      label: "Executive Dashboard",
+      icon: Layers,
+      allowed: ["REGISTRY_ADMIN", "MODULE_LEADER", "BURSAR_FINANCE"],
+    },
+    {
+      id: "enrolment",
+      label: "Student Enrolment",
+      icon: Users2,
+      allowed: ["REGISTRY_ADMIN", "BURSAR_FINANCE"],
+    },
+    {
+      id: "fees",
+      label: "Fees & Ledger",
+      icon: Receipt,
+      allowed: ["REGISTRY_ADMIN", "BURSAR_FINANCE"],
+    },
+    {
+      id: "assessments",
+      label: "Assessments",
+      icon: FileCheck2,
+      allowed: ["REGISTRY_ADMIN", "MODULE_LEADER"],
+    },
+    {
+      id: "marksheet",
+      label: "Marksheet & Results",
+      icon: Award,
+      allowed: ["REGISTRY_ADMIN", "MODULE_LEADER"],
+    },
+    {
+      id: "audit",
+      label: "Registry Audit Trail",
+      icon: ShieldCheck,
+      allowed: ["REGISTRY_ADMIN", "MODULE_LEADER", "BURSAR_FINANCE"],
+    },
   ];
 
+  const visibleStaffTabs = allStaffTabs.filter((tab) =>
+    tab.allowed.includes(persona)
+  );
+
   const currentStudent = students.find((s) => s.id === activeStudentId);
+
+  const getRoleBadge = () => {
+    switch (persona) {
+      case "REGISTRY_ADMIN":
+        return "LEVEL 4 • REGISTRY GOVERNANCE";
+      case "MODULE_LEADER":
+        return "FACULTY • ACADEMIC ASSESSOR";
+      case "BURSAR_FINANCE":
+        return "BURSARY • FINANCE DIRECTORATE";
+      case "STUDENT":
+        return "ENROLLED CANDIDATE";
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-white/[0.08] bg-white/85 dark:bg-[#0b0e17]/85 backdrop-blur-xl transition-all shadow-xs dark:shadow-none">
@@ -84,38 +141,65 @@ export function Navbar({
             </div>
           </div>
 
-          {/* Right Controls: Theme Toggle, Role Toggle, Persona Switcher */}
+          {/* Right Controls: Theme Toggle & Institutional Persona RBAC Switcher */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Theme Toggle Button */}
             <ThemeToggle />
 
-            {/* Role Switcher Pill */}
-            <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-900/90 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-inner">
-              <button
-                type="button"
-                onClick={() => onRoleChange("staff")}
-                className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
-                  role === "staff"
-                    ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-600/30"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
-              >
-                <ShieldCheck className="w-4 h-4" />
-                <span>Staff</span>
-              </button>
+            {/* Institutional Persona RBAC Switcher */}
+            <div className="relative flex items-center">
+              <div className="flex items-center gap-2 pl-3 pr-2 py-1.5 bg-slate-100 dark:bg-slate-900/90 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs">
+                <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-sm">
+                  {persona === "STUDENT" ? (
+                    <GraduationCap className="w-4 h-4" />
+                  ) : persona === "BURSAR_FINANCE" ? (
+                    <Receipt className="w-4 h-4" />
+                  ) : persona === "MODULE_LEADER" ? (
+                    <FileCheck2 className="w-4 h-4" />
+                  ) : (
+                    <ShieldCheck className="w-4 h-4" />
+                  )}
+                </div>
 
-              <button
-                type="button"
-                onClick={() => onRoleChange("student")}
-                className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
-                  role === "student"
-                    ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-600/30"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
-              >
-                <GraduationCap className="w-4 h-4" />
-                <span>Student</span>
-              </button>
+                <div className="flex flex-col text-left">
+                  <span className="text-[9px] uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400">
+                    {getRoleBadge()}
+                  </span>
+                  <select
+                    value={persona}
+                    onChange={(e) =>
+                      onPersonaChange(e.target.value as InstitutionalPersona)
+                    }
+                    className="bg-transparent text-xs font-extrabold text-slate-800 dark:text-white focus:outline-none cursor-pointer pr-4 appearance-none"
+                  >
+                    <option
+                      value="REGISTRY_ADMIN"
+                      className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white"
+                    >
+                      Registry Admin (Dr. Pendelton)
+                    </option>
+                    <option
+                      value="MODULE_LEADER"
+                      className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white"
+                    >
+                      Module Leader (Dr. Jenkins)
+                    </option>
+                    <option
+                      value="BURSAR_FINANCE"
+                      className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white"
+                    >
+                      Bursar / Finance (D. Sterling)
+                    </option>
+                    <option
+                      value="STUDENT"
+                      className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white"
+                    >
+                      Student Candidate Portal
+                    </option>
+                  </select>
+                </div>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+              </div>
             </div>
 
             {/* Persona Switcher Dropdown (in Student View) */}
@@ -127,7 +211,7 @@ export function Navbar({
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[9px] uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400">
-                      Simulate Student
+                      Active Candidate
                     </span>
                     <select
                       value={activeStudentId || ""}
@@ -155,7 +239,7 @@ export function Navbar({
         {/* Secondary Workflow Tab Bar (When in Staff View) */}
         {role === "staff" && (
           <div className="flex items-center space-x-1 sm:space-x-2 border-t border-slate-200/80 dark:border-white/[0.06] overflow-x-auto py-2.5 scrollbar-none">
-            {staffTabs.map((tab) => {
+            {visibleStaffTabs.map((tab) => {
               const isActive = activeStaffTab === tab.id;
               const Icon = tab.icon;
               return (
@@ -183,3 +267,4 @@ export function Navbar({
     </header>
   );
 }
+

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Navbar } from "@/components/layout/Navbar";
+import { Navbar, InstitutionalPersona } from "@/components/layout/Navbar";
 import { OverviewDashboard } from "@/components/staff/OverviewDashboard";
 import { EnrolmentWorkflow } from "@/components/staff/EnrolmentWorkflow";
 import { FeesPaymentsWorkflow } from "@/components/staff/FeesPaymentsWorkflow";
@@ -12,6 +12,7 @@ import { StudentPortal } from "@/components/student/StudentPortal";
 
 export default function Home() {
   const [role, setRole] = useState<"staff" | "student">("staff");
+  const [persona, setPersona] = useState<InstitutionalPersona>("REGISTRY_ADMIN");
   const [activeStaffTab, setActiveStaffTab] = useState<string>("overview");
 
   // Global data states
@@ -76,12 +77,46 @@ export default function Home() {
     setIsPaymentModalOpen(true);
   };
 
+  // Persona Change Handler (RBAC)
+  const handlePersonaChange = (newPersona: InstitutionalPersona) => {
+    setPersona(newPersona);
+    if (newPersona === "STUDENT") {
+      setRole("student");
+    } else {
+      setRole("staff");
+      if (
+        newPersona === "MODULE_LEADER" &&
+        (activeStaffTab === "fees" || activeStaffTab === "enrolment")
+      ) {
+        setActiveStaffTab("assessments");
+      } else if (
+        newPersona === "BURSAR_FINANCE" &&
+        (activeStaffTab === "assessments" || activeStaffTab === "marksheet")
+      ) {
+        setActiveStaffTab("fees");
+      }
+    }
+  };
+
+  const handleRoleChange = (newRole: "staff" | "student") => {
+    setRole(newRole);
+    if (newRole === "student") {
+      setPersona("STUDENT");
+    } else {
+      if (persona === "STUDENT") {
+        setPersona("REGISTRY_ADMIN");
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top Navigation */}
       <Navbar
         role={role}
-        onRoleChange={setRole}
+        onRoleChange={handleRoleChange}
+        persona={persona}
+        onPersonaChange={handlePersonaChange}
         students={students}
         activeStudentId={activeStudentId}
         onStudentChange={setActiveStudentId}
