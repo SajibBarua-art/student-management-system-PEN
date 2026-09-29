@@ -56,7 +56,7 @@ export function OverviewDashboard({
   return (
     <div className="space-y-6">
       {/* Executive Command Center Hero */}
-      <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-white/10 bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/40 dark:from-[#12172b] dark:via-[#101424] dark:to-[#0c0f1a] shadow-lg dark:shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/10 bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/40 dark:from-[#12172b] dark:via-[#101424] dark:to-[#0c0f1a] shadow-lg dark:shadow-2xl">
         {/* Glow ambient spots */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-purple-500/10 dark:bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />

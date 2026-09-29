@@ -30,7 +30,7 @@ export function CardHeader({
   return (
     <div
       className={twMerge(
-        clsx("p-5 sm:p-6 border-b border-slate-200/80 dark:border-white/[0.06]", className)
+        clsx("p-4 sm:p-5 border-b border-slate-200/80 dark:border-white/[0.06]", className)
       )}
       {...props}
     >
@@ -79,7 +79,7 @@ export function CardContent({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={twMerge(clsx("p-5 sm:p-6", className))} {...props}>
+    <div className={twMerge(clsx("p-4 sm:p-5", className))} {...props}>
       {children}
     </div>
   );
@@ -93,7 +93,7 @@ export function CardFooter({
   return (
     <div
       className={twMerge(
-        clsx("p-5 sm:p-6 pt-0 flex items-center justify-between border-t border-slate-200/80 dark:border-white/[0.04]", className)
+        clsx("p-4 sm:p-5 pt-0 flex items-center justify-between border-t border-slate-200/80 dark:border-white/[0.04]", className)
       )}
       {...props}
     >

@@ -149,7 +149,7 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
   return (
     <div className="space-y-6">
       {/* Student Identity Card / Hero Banner */}
-      <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-white/10 bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/40 dark:from-indigo-900 dark:via-slate-900 dark:to-[#0a0d18] text-slate-900 dark:text-white shadow-lg dark:shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-white/10 bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/40 dark:from-indigo-900 dark:via-slate-900 dark:to-[#0a0d18] text-slate-900 dark:text-white shadow-lg dark:shadow-2xl">
         <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">

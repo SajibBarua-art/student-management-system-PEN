@@ -4,7 +4,6 @@ import React from "react";
 import {
   GraduationCap,
   ShieldCheck,
-  Database,
   Building2,
   ChevronDown,
   Sparkles,
@@ -57,7 +56,7 @@ export function Navbar({
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-white/[0.08] bg-white/85 dark:bg-[#0b0e17]/85 backdrop-blur-xl transition-all shadow-xs dark:shadow-none">
       {/* Top Header Row */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1600px] mx-auto px-3 sm:px-5 lg:px-6">
         <div className="flex items-center justify-between h-16 sm:h-20 gap-3 sm:gap-4">
           {/* Logo & System Brand */}
           <div className="flex items-center gap-3.5">
@@ -84,18 +83,8 @@ export function Navbar({
             </div>
           </div>
 
-          {/* Right Controls: Database Pill, Theme Toggle, Role Toggle, Persona Switcher */}
+          {/* Right Controls: Theme Toggle, Role Toggle, Persona Switcher */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* PostgreSQL Health Indicator */}
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/10 rounded-full dark:border-emerald-500/25 shadow-xs">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
-              <Database className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span className="font-mono text-[11px]">PostgreSQL 18</span>
-            </div>
-
             {/* Theme Toggle Button */}
             <ThemeToggle />
 
