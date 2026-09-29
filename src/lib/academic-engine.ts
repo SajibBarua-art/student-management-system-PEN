@@ -138,3 +138,83 @@ export function calculateAcademicStanding(
     badgeVariant,
   };
 }
+
+export interface LatePenaltyResult {
+  rawGrade: number;
+  penalizedGrade: number;
+  penaltyDeduction: number;
+  isLate: boolean;
+  hasApprovedEC: boolean;
+  explanation: string;
+}
+
+/**
+ * Calculates standard institutional late submission penalties:
+ * - 5 percentage points deducted per 24h period late (up to 5 days / 25%).
+ * - If submission is > 5 days late without an approved EC, capped at 40% Pass mark.
+ * - If student has an APPROVED Extenuating Circumstance (EC), penalty is 0 (Waived).
+ */
+export function calculateLatePenalty({
+  rawGrade,
+  submittedAt,
+  deadline,
+  hasApprovedEC,
+}: {
+  rawGrade: number;
+  submittedAt: Date | string;
+  deadline: Date | string;
+  hasApprovedEC: boolean;
+}): LatePenaltyResult {
+  const subDate = new Date(submittedAt);
+  const deadDate = new Date(deadline);
+  const diffMs = subDate.getTime() - deadDate.getTime();
+  const isLate = diffMs > 0;
+
+  if (!isLate) {
+    return {
+      rawGrade,
+      penalizedGrade: rawGrade,
+      penaltyDeduction: 0,
+      isLate: false,
+      hasApprovedEC: false,
+      explanation: "Submitted on time.",
+    };
+  }
+
+  if (hasApprovedEC) {
+    return {
+      rawGrade,
+      penalizedGrade: rawGrade,
+      penaltyDeduction: 0,
+      isLate: true,
+      hasApprovedEC: true,
+      explanation: "Late submission penalty waived due to approved Extenuating Circumstances claim.",
+    };
+  }
+
+  // Calculate days late (rounded up)
+  const daysLate = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  let penaltyDeduction = 0;
+  let penalizedGrade = rawGrade;
+  let explanation = "";
+
+  if (daysLate <= 5) {
+    penaltyDeduction = daysLate * 5;
+    penalizedGrade = Math.max(0, rawGrade - penaltyDeduction);
+    explanation = `${daysLate} day(s) late: standard university deduction of 5% per 24hr (-${penaltyDeduction}%).`;
+  } else {
+    // Beyond 5 days late without EC: capped at 40% (or 0 if raw grade was fail)
+    penalizedGrade = rawGrade >= 40 ? 40 : 0;
+    penaltyDeduction = rawGrade - penalizedGrade;
+    explanation = `Submitted ${daysLate} days late without approved EC: capped at 40% Pass mark.`;
+  }
+
+  return {
+    rawGrade,
+    penalizedGrade,
+    penaltyDeduction,
+    isLate: true,
+    hasApprovedEC: false,
+    explanation,
+  };
+}

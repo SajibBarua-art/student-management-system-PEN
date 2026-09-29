@@ -57,6 +57,75 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
 
+  // Extenuating Circumstances (EC) modal state
+  const [isEcModalOpen, setIsEcModalOpen] = useState(false);
+  const [activeAssessmentForEc, setActiveAssessmentForEc] = useState<any | null>(null);
+  const [ecReason, setEcReason] = useState<string>("MEDICAL");
+  const [ecExplanation, setEcExplanation] = useState<string>("");
+  const [ecDays, setEcDays] = useState<string>("7");
+  const [isSubmittingEc, setIsSubmittingEc] = useState(false);
+  const [ecError, setEcError] = useState<string | null>(null);
+  const [ecSuccess, setEcSuccess] = useState<string | null>(null);
+
+  const handleOpenEcModal = (asm: any) => {
+    setActiveAssessmentForEc(asm);
+    const existing = student?.extenuatingCircumstances?.find((ec: any) => ec.assessmentId === asm.id);
+    if (existing) {
+      setEcReason(existing.reason);
+      setEcExplanation(existing.explanation);
+      setEcDays(existing.requestedExtensionDays.toString());
+    } else {
+      setEcReason("MEDICAL");
+      setEcExplanation("");
+      setEcDays("7");
+    }
+    setEcError(null);
+    setEcSuccess(null);
+    setIsEcModalOpen(true);
+  };
+
+  const handleSubmitEc = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeAssessmentForEc || !ecExplanation.trim()) {
+      setEcError("Please provide an explanation for your extenuating circumstances.");
+      return;
+    }
+
+    setIsSubmittingEc(true);
+    setEcError(null);
+    setEcSuccess(null);
+
+    try {
+      const res = await fetch("/api/extenuating-circumstances", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: student.id,
+          assessmentId: activeAssessmentForEc.id,
+          reason: ecReason,
+          explanation: ecExplanation,
+          requestedExtensionDays: parseInt(ecDays, 10),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to submit EC claim");
+      }
+
+      setEcSuccess(data.message);
+      fetchStudentData();
+      setTimeout(() => {
+        setIsEcModalOpen(false);
+        setEcSuccess(null);
+      }, 1500);
+    } catch (err: any) {
+      setEcError(err.message);
+    } finally {
+      setIsSubmittingEc(false);
+    }
+  };
+
   const fetchStudentData = async () => {
     setIsLoading(true);
     try {
@@ -345,6 +414,48 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
                         </div>
                       )}
                     </div>
+
+                    {/* Extenuating Circumstances (EC) Claim Badge / Button */}
+                    {(() => {
+                      const myEc = student.extenuatingCircumstances?.find((ec: any) => ec.assessmentId === asm.id);
+                      if (myEc) {
+                        return (
+                          <div className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 ${
+                            myEc.status === "APPROVED"
+                              ? "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-500/30 dark:text-emerald-300"
+                              : myEc.status === "REJECTED"
+                              ? "bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-950/20 dark:border-rose-500/30 dark:text-rose-300"
+                              : "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/20 dark:border-amber-500/30 dark:text-amber-300"
+                          }`}>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                              <span className="font-semibold truncate">
+                                EC Claim ({myEc.reason}): {myEc.status === "APPROVED" ? `Approved (+${myEc.requestedExtensionDays}d extension)` : myEc.status}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEcModal(asm)}
+                              className="text-[11px] font-bold underline hover:opacity-80 shrink-0 cursor-pointer"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="flex justify-end pt-1">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEcModal(asm)}
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 cursor-pointer"
+                          >
+                            <AlertTriangle className="w-3 h-3 text-amber-500" />
+                            <span>Request Extension (EC Claim)</span>
+                          </button>
+                        </div>
+                      );
+                    })()}
                   </CardContent>
 
                   <div className="p-4 sm:p-5 pt-0 border-t border-slate-200 dark:border-white/[0.04] flex items-center justify-between gap-2">
@@ -735,6 +846,113 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
             <Button type="submit" variant="gradient" isLoading={isUploading}>
               <UploadCloud className="w-4 h-4 mr-1.5" />
               Upload & Submit
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Extenuating Circumstances (EC) Request Modal */}
+      <Modal
+        isOpen={isEcModalOpen}
+        onClose={() => setIsEcModalOpen(false)}
+        title={
+          activeAssessmentForEc
+            ? `Extenuating Circumstances (EC) Claim: ${activeAssessmentForEc.moduleCode}`
+            : "Lodge Extenuating Circumstances Claim"
+        }
+        description="Request a penalty-free submission extension or late penalty waiver subject to formal Registry Examination Board approval."
+        maxWidth="md"
+      >
+        <form onSubmit={handleSubmitEc} className="space-y-4">
+          {ecError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-500/10 dark:border-rose-500/30 dark:text-rose-300 text-xs rounded-xl">
+              {ecError}
+            </div>
+          )}
+
+          {ecSuccess && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/30 dark:text-emerald-300 text-xs rounded-xl flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span>{ecSuccess}</span>
+            </div>
+          )}
+
+          {activeAssessmentForEc && (
+            <div className="p-3.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-white/10 text-xs space-y-1">
+              <span className="font-bold text-slate-900 dark:text-white block">
+                {activeAssessmentForEc.title} ({activeAssessmentForEc.moduleName})
+              </span>
+              <span className="text-slate-500 dark:text-slate-400 block">
+                Official Module Deadline: {formatDateTime(activeAssessmentForEc.deadline)}
+              </span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                Circumstance Category *
+              </label>
+              <select
+                value={ecReason}
+                onChange={(e) => setEcReason(e.target.value)}
+                className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer font-bold"
+              >
+                <option value="MEDICAL">Medical Emergency / Illness</option>
+                <option value="BEREAVEMENT">Bereavement / Family Loss</option>
+                <option value="ACUTE_PERSONAL">Acute Personal Crisis</option>
+                <option value="TECHNICAL_FAILURE">Major System / Technical Malfunction</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                Requested Extension Days *
+              </label>
+              <select
+                value={ecDays}
+                onChange={(e) => setEcDays(e.target.value)}
+                className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer font-bold"
+              >
+                <option value="7">7 Days Extension (Standard)</option>
+                <option value="14">14 Days Extension (Major Medical)</option>
+                <option value="21">21 Days Extension (Exceptional)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              Explanation & Supporting Evidence Summary *
+            </label>
+            <textarea
+              rows={4}
+              required
+              placeholder="State the circumstances preventing on-time coursework submission and summarize evidence available (e.g. medical practitioner note, police report, or certificate)..."
+              value={ecExplanation}
+              onChange={(e) => setEcExplanation(e.target.value)}
+              className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-500/30 rounded-xl text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <span>
+              By lodging this claim, you declare that the facts provided are true. False extenuating circumstances claims constitute academic misconduct.
+            </span>
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-white/[0.08]">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsEcModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" variant="gradient" isLoading={isSubmittingEc}>
+              <AlertTriangle className="w-4 h-4 mr-1.5 text-amber-300" />
+              Lodge EC Claim
             </Button>
           </div>
         </form>

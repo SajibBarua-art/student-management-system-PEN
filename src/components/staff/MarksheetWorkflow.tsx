@@ -26,6 +26,7 @@ import {
   getClassificationLabel,
   getClassificationBadgeColor,
 } from "@/lib/grade-classification";
+import { calculateLatePenalty } from "@/lib/academic-engine";
 import { formatDateTime } from "@/lib/formatters";
 
 interface MarksheetWorkflowProps {
@@ -390,6 +391,21 @@ export function MarksheetWorkflow({
                 const sub = currentAssessment?.submissions?.find(
                   (s: any) => s.studentId === student.id
                 );
+                const matchingEc = currentAssessment?.extenuatingCircumstances?.find(
+                  (e: any) => e.studentId === student.id
+                );
+                const hasApprovedEc = matchingEc?.status === "APPROVED";
+                const hasPendingEc = matchingEc?.status === "PENDING";
+                const lateCalc =
+                  sub && sub.isLate && currentAssessment?.deadline
+                    ? calculateLatePenalty({
+                        rawGrade: parseFloat(gradingRows[student.id]?.numericGrade) || 0,
+                        submittedAt: sub.submittedAt,
+                        deadline: currentAssessment.deadline,
+                        hasApprovedEC: hasApprovedEc,
+                      })
+                    : null;
+
                 const row = gradingRows[student.id] || {
                   numericGrade: "",
                   feedback: "",
@@ -418,9 +434,23 @@ export function MarksheetWorkflow({
                     <td className="py-3.5 px-5">
                       {sub ? (
                         sub.isLate ? (
-                          <Badge variant="danger" dot>Late (v{sub.version})</Badge>
+                          hasApprovedEc ? (
+                            <Badge variant="purple" dot>
+                              Late (EC Waived)
+                            </Badge>
+                          ) : hasPendingEc ? (
+                            <Badge variant="warning" dot>
+                              Late (EC Pending)
+                            </Badge>
+                          ) : (
+                            <Badge variant="danger" dot>
+                              Late (v{sub.version})
+                            </Badge>
+                          )
                         ) : (
-                          <Badge variant="success" dot>On-Time (v{sub.version})</Badge>
+                          <Badge variant="success" dot>
+                            On-Time (v{sub.version})
+                          </Badge>
                         )
                       ) : (
                         <span className="text-[11px] text-slate-400 dark:text-slate-500 italic">
@@ -448,7 +478,7 @@ export function MarksheetWorkflow({
                       )}
                     </td>
 
-                    {/* Numeric Grade Input */}
+                    {/* Numeric Grade Input with Institutional Penalty Breakdown */}
                     <td className="py-3.5 px-5">
                       <div className="flex items-center gap-1.5">
                         <input
@@ -465,6 +495,22 @@ export function MarksheetWorkflow({
                         />
                         <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">/100</span>
                       </div>
+                      {lateCalc && row.numericGrade !== "" && (
+                        <div className="mt-1">
+                          {hasApprovedEc ? (
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block">
+                              EC Waived (0% pen.)
+                            </span>
+                          ) : lateCalc.penaltyDeduction > 0 ? (
+                            <span
+                              className="text-[10px] text-rose-500 font-semibold block"
+                              title={lateCalc.explanation}
+                            >
+                              Net: {lateCalc.penalizedGrade}% (-{lateCalc.penaltyDeduction}%)
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
                     </td>
 
                     {/* Classification */}

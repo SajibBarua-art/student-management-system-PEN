@@ -15,6 +15,8 @@ import {
   ExternalLink,
   BookOpen,
   Sparkles,
+  ShieldCheck,
+  ShieldAlert,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +39,7 @@ export function AssessmentsWorkflow({
   const [selectedAssessmentForSubmissions, setSelectedAssessmentForSubmissions] =
     useState<any | null>(null);
   const [isSubmissionsModalOpen, setIsSubmissionsModalOpen] = useState(false);
+  const [reviewingEcId, setReviewingEcId] = useState<string | null>(null);
 
   // New assessment form state
   const [formData, setFormData] = useState({
@@ -65,6 +68,44 @@ export function AssessmentsWorkflow({
       console.error("Failed to load assessments:", err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleReviewEc = async (
+    ecId: string,
+    status: "APPROVED" | "REJECTED"
+  ) => {
+    setReviewingEcId(ecId);
+    try {
+      const res = await fetch("/api/extenuating-circumstances", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: ecId,
+          status,
+          reviewerNotes:
+            status === "APPROVED"
+              ? "Approved by Academic Registry. Late submission penalty formally waived."
+              : "Claim rejected due to non-qualifying grounds or insufficient supporting evidence.",
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Refresh assessments list and current modal view
+        const updatedRes = await fetch("/api/assessments");
+        const updatedData = await updatedRes.json();
+        if (updatedData.success) {
+          setAssessments(updatedData.data);
+          const current = updatedData.data.find(
+            (a: any) => a.id === selectedAssessmentForSubmissions?.id
+          );
+          if (current) setSelectedAssessmentForSubmissions(current);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to review EC:", err);
+    } finally {
+      setReviewingEcId(null);
     }
   };
 
@@ -471,11 +512,39 @@ export function AssessmentsWorkflow({
                         <span className="font-mono text-xs text-indigo-600 dark:text-indigo-400">
                           ({sub.student?.studentId})
                         </span>
-                        {/* Edge Case: Visual Late Submission Flag */}
+                        {/* Edge Case: Visual Late Submission Flag with EC Awareness */}
                         {sub.isLate ? (
-                          <Badge variant="danger" dot>LATE SUBMISSION</Badge>
+                          (() => {
+                            const matchingEc =
+                              selectedAssessmentForSubmissions.extenuatingCircumstances?.find(
+                                (e: any) =>
+                                  e.studentId === sub.student?.id ||
+                                  e.studentId === sub.studentId
+                              );
+                            if (matchingEc?.status === "APPROVED") {
+                              return (
+                                <Badge variant="purple" dot>
+                                  Late (Penalty Waived — EC Approved)
+                                </Badge>
+                              );
+                            }
+                            if (matchingEc?.status === "PENDING") {
+                              return (
+                                <Badge variant="warning" dot>
+                                  Late (EC Claim Pending Review)
+                                </Badge>
+                              );
+                            }
+                            return (
+                              <Badge variant="danger" dot>
+                                LATE SUBMISSION (-5%/day)
+                              </Badge>
+                            );
+                          })()
                         ) : (
-                          <Badge variant="success" dot>ON-TIME</Badge>
+                          <Badge variant="success" dot>
+                            ON-TIME
+                          </Badge>
                         )}
                         <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                           v{sub.version}
@@ -508,6 +577,113 @@ export function AssessmentsWorkflow({
                 ))}
               </div>
             )}
+
+            {/* Extenuating Circumstances (EC) Review Panel */}
+            <div className="pt-4 border-t border-slate-200 dark:border-white/10 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-amber-500" />
+                  <span className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Extenuating Circumstances Claims (
+                    {selectedAssessmentForSubmissions.extenuatingCircumstances?.length || 0}
+                    )
+                  </span>
+                </div>
+              </div>
+
+              {!selectedAssessmentForSubmissions.extenuatingCircumstances ||
+              selectedAssessmentForSubmissions.extenuatingCircumstances.length === 0 ? (
+                <p className="text-xs text-slate-500 dark:text-slate-400 italic p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-white/[0.04]">
+                  No formal extenuating circumstance claims have been filed for this assessment.
+                </p>
+              ) : (
+                <div className="space-y-2.5">
+                  {selectedAssessmentForSubmissions.extenuatingCircumstances.map(
+                    (ec: any) => (
+                      <div
+                        key={ec.id}
+                        className="p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-white/10 text-xs space-y-2"
+                      >
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-slate-900 dark:text-white">
+                              {ec.student?.fullName}
+                            </span>
+                            <span className="font-mono text-indigo-600 dark:text-indigo-400">
+                              ({ec.student?.studentId})
+                            </span>
+                            <Badge
+                              variant={
+                                ec.status === "APPROVED"
+                                  ? "success"
+                                  : ec.status === "REJECTED"
+                                  ? "danger"
+                                  : "warning"
+                              }
+                              dot
+                            >
+                              {ec.status}
+                            </Badge>
+                          </div>
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                            {formatDate(ec.createdAt)}
+                          </span>
+                        </div>
+
+                        <div className="text-slate-700 dark:text-slate-300">
+                          <span className="font-semibold text-slate-500 dark:text-slate-400 uppercase text-[10px] block">
+                            Grounds: {ec.reason}
+                          </span>
+                          <p className="mt-0.5">{ec.explanation}</p>
+                        </div>
+
+                        {ec.evidenceUrl && (
+                          <div className="text-[11px]">
+                            <span className="text-slate-500">Supporting Evidence: </span>
+                            <a
+                              href={ec.evidenceUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-indigo-600 dark:text-indigo-400 hover:underline font-mono"
+                            >
+                              {ec.evidenceUrl}
+                            </a>
+                          </div>
+                        )}
+
+                        {ec.status === "PENDING" ? (
+                          <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60 dark:border-white/5">
+                            <Button
+                              size="sm"
+                              variant="gradient"
+                              className="text-xs h-7 px-3"
+                              isLoading={reviewingEcId === ec.id}
+                              onClick={() => handleReviewEc(ec.id, "APPROVED")}
+                            >
+                              <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+                              Approve (Waive Penalty)
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-7 px-3 border-rose-300 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20"
+                              isLoading={reviewingEcId === ec.id}
+                              onClick={() => handleReviewEc(ec.id, "REJECTED")}
+                            >
+                              Reject Claim
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400 italic pt-1 border-t border-slate-200/60 dark:border-white/5">
+                            Registry decision: {ec.reviewerNotes || ec.status}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="flex items-center justify-end pt-3 border-t border-slate-200 dark:border-white/[0.08]">
               <Button

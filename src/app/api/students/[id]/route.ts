@@ -31,6 +31,12 @@ export async function GET(
           },
           orderBy: { createdAt: "desc" },
         },
+        extenuatingCircumstances: {
+          include: {
+            assessment: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
 

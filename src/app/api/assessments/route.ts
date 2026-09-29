@@ -40,6 +40,17 @@ export async function GET(req: NextRequest) {
             },
           },
         },
+        extenuatingCircumstances: {
+          include: {
+            student: {
+              select: {
+                id: true,
+                studentId: true,
+                fullName: true,
+              },
+            },
+          },
+        },
       },
     });
 

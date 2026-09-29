@@ -24,6 +24,19 @@ enum GradeClassification {
   FAIL
 }
 
+enum ECStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ECReason {
+  MEDICAL
+  BEREAVEMENT
+  ACUTE_PERSONAL
+  TECHNICAL_FAILURE
+}
+
 model Programme {
   id            String       @id @default(cuid())
   code          String       @unique
@@ -52,6 +65,7 @@ model Student {
   payments     Payment[]
   submissions  Submission[]
   grades       Grade[]
+  extenuatingCircumstances ExtenuatingCircumstance[]
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 
@@ -103,6 +117,7 @@ model Assessment {
   academicYear String
   submissions  Submission[]
   grades       Grade[]
+  extenuatingCircumstances ExtenuatingCircumstance[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
@@ -152,3 +167,26 @@ model Grade {
   @@index([studentId])
   @@index([isPublished])
 }
+
+model ExtenuatingCircumstance {
+  id                     String     @id @default(cuid())
+  studentId              String
+  student                Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  assessmentId           String
+  assessment             Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  reason                 ECReason   @default(MEDICAL)
+  explanation            String
+  requestedExtensionDays Int        @default(7)
+  status                 ECStatus   @default(PENDING)
+  staffNotes             String?
+  reviewedBy             String?
+  reviewedAt             DateTime?
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+
+  @@unique([studentId, assessmentId])
+  @@index([studentId])
+  @@index([assessmentId])
+  @@index([status])
+}
+
