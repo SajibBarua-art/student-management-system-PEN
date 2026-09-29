@@ -48,20 +48,11 @@ interface StudentPortalProps {
 export function StudentPortal({ studentId }: StudentPortalProps) {
   const [student, setStudent] = useState<any | null>(null);
   const [assessments, setAssessments] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<"finance" | "assessments" | "marksheet">(() => {
-    if (typeof window !== "undefined") {
-      const p = new URLSearchParams(window.location.search);
-      const sub = p.get("subtab");
-      if (sub === "finance" || sub === "assessments" || sub === "marksheet") {
-        return sub;
-      }
-    }
-    return "assessments";
-  });
+  const [activeTab, setActiveTab] = useState<"finance" | "assessments" | "marksheet">("assessments");
   const [isLoading, setIsLoading] = useState(true);
   const [portalError, setPortalError] = useState<string | null>(null);
 
-  // Sync subtab state when browser history navigates
+  // Sync subtab state on mount and when browser history navigates
   useEffect(() => {
     if (typeof window === "undefined") return;
     const syncSubtab = () => {
@@ -71,6 +62,7 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
         setActiveTab(sub);
       }
     };
+    syncSubtab();
     window.addEventListener("popstate", syncSubtab);
     return () => window.removeEventListener("popstate", syncSubtab);
   }, []);

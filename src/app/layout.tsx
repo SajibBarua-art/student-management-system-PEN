@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
 
@@ -33,14 +34,14 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${jakarta.variable} ${mono.variable} h-full antialiased`}
     >
-      <head>
-        <script
+      <body className="min-h-full flex flex-col font-sans bg-slate-50 text-slate-900 dark:bg-[#0c0f17] dark:text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-600 dark:selection:text-indigo-200 transition-colors duration-200">
+        <Script
+          id="theme-initializer"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `try{var t=localStorage.getItem('sms_theme');if(t==='dark'){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}}catch(e){}`,
           }}
         />
-      </head>
-      <body className="min-h-full flex flex-col font-sans bg-slate-50 text-slate-900 dark:bg-[#0c0f17] dark:text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-600 dark:selection:text-indigo-200 transition-colors duration-200">
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

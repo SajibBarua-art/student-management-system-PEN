@@ -11,55 +11,11 @@ import { AuditTrailWorkflow } from "@/components/staff/AuditTrailWorkflow";
 import { StudentPortal } from "@/components/student/StudentPortal";
 
 export default function Home() {
-  // Initialize state from URL search params on client
-  const [role, setRole] = useState<"staff" | "student">(() => {
-    if (typeof window !== "undefined") {
-      const p = new URLSearchParams(window.location.search);
-      return p.get("role") === "student" ? "student" : "staff";
-    }
-    return "staff";
-  });
-
-  const [persona, setPersona] = useState<InstitutionalPersona>(() => {
-    if (typeof window !== "undefined") {
-      const p = new URLSearchParams(window.location.search);
-      const personaParam = p.get("persona");
-      if (
-        personaParam &&
-        ["REGISTRY_ADMIN", "MODULE_LEADER", "BURSAR_FINANCE", "STUDENT"].includes(
-          personaParam
-        )
-      ) {
-        return personaParam as InstitutionalPersona;
-      }
-      if (p.get("role") === "student") return "STUDENT";
-    }
-    return "REGISTRY_ADMIN";
-  });
-
-  const [activeStaffTab, setActiveStaffTab] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      const p = new URLSearchParams(window.location.search);
-      const tabParam = p.get("tab");
-      if (
-        tabParam &&
-        ["overview", "enrolment", "fees", "assessments", "marksheet", "audit"].includes(
-          tabParam
-        )
-      ) {
-        return tabParam;
-      }
-    }
-    return "overview";
-  });
-
-  const [activeStudentId, setActiveStudentId] = useState<string | null>(() => {
-    if (typeof window !== "undefined") {
-      const p = new URLSearchParams(window.location.search);
-      return p.get("studentId") || null;
-    }
-    return null;
-  });
+  // Use consistent SSR-safe initial state to prevent React hydration mismatch
+  const [role, setRole] = useState<"staff" | "student">("staff");
+  const [persona, setPersona] = useState<InstitutionalPersona>("REGISTRY_ADMIN");
+  const [activeStaffTab, setActiveStaffTab] = useState<string>("overview");
+  const [activeStudentId, setActiveStudentId] = useState<string | null>(null);
 
   // Global data states
   const [students, setStudents] = useState<any[]>([]);
@@ -145,6 +101,7 @@ export default function Home() {
       }
     };
 
+    syncFromUrl();
     window.addEventListener("popstate", syncFromUrl);
     return () => window.removeEventListener("popstate", syncFromUrl);
   }, []);
