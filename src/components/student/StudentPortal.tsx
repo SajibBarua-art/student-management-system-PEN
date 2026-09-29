@@ -16,16 +16,19 @@ import {
   Calendar,
   RefreshCw,
   Lock,
-  User,
   Sparkles,
   ShieldCheck,
   CheckCircle2,
+  Printer,
+  Receipt,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Alert } from "@/components/ui/alert";
+import { OfficialTranscriptModal } from "@/components/documents/OfficialTranscriptModal";
+import { FeeReceiptModal } from "@/components/documents/FeeReceiptModal";
 import {
   formatCurrency,
   formatDate,
@@ -56,6 +59,11 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+
+  // Official Documents modal state
+  const [isTranscriptModalOpen, setIsTranscriptModalOpen] = useState(false);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [selectedPaymentForReceipt, setSelectedPaymentForReceipt] = useState<any | null>(null);
 
   // Extenuating Circumstances (EC) modal state
   const [isEcModalOpen, setIsEcModalOpen] = useState(false);
@@ -518,10 +526,21 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
                 Official grades confirmed and published by the Registry Examination Board.
               </p>
             </div>
-            <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/25 font-bold">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              Registry Board Stamped
-            </span>
+            <div className="flex items-center gap-2.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsTranscriptModalOpen(true)}
+                className="text-xs font-bold"
+              >
+                <Printer className="w-3.5 h-3.5 mr-1.5 text-indigo-600 dark:text-indigo-400" />
+                Print Official Transcript
+              </Button>
+              <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/25 font-bold">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Registry Board Stamped
+              </span>
+            </div>
           </div>
 
           {/* Withheld notice */}
@@ -717,12 +736,13 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
                     <th className="py-3.5 px-5">Method</th>
                     <th className="py-3.5 px-5">Notes</th>
                     <th className="py-3.5 px-5 text-right">Amount Paid</th>
+                    <th className="py-3.5 px-5 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
                   {student.payments?.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-400 dark:text-slate-500">
+                      <td colSpan={6} className="py-8 text-center text-slate-400 dark:text-slate-500">
                         No payment records registered yet.
                       </td>
                     </tr>
@@ -743,6 +763,23 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
                         </td>
                         <td className="py-3.5 px-5 text-right font-extrabold text-emerald-600 dark:text-emerald-400">
                           +{formatCurrency(p.amount)}
+                        </td>
+                        <td className="py-3.5 px-5 text-right">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedPaymentForReceipt({
+                                ...p,
+                                reference: p.referenceNumber,
+                              });
+                              setIsReceiptModalOpen(true);
+                            }}
+                            className="text-xs h-7 px-2.5"
+                          >
+                            <Receipt className="w-3.5 h-3.5 mr-1 text-emerald-600 dark:text-emerald-400" />
+                            Receipt
+                          </Button>
                         </td>
                       </tr>
                     ))
@@ -957,6 +994,22 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
           </div>
         </form>
       </Modal>
+
+      {/* Official Academic Transcript Modal */}
+      <OfficialTranscriptModal
+        isOpen={isTranscriptModalOpen}
+        onClose={() => setIsTranscriptModalOpen(false)}
+        student={student}
+        academicStanding={academicStanding}
+      />
+
+      {/* Official Fee Payment Receipt Modal */}
+      <FeeReceiptModal
+        isOpen={isReceiptModalOpen}
+        onClose={() => setIsReceiptModalOpen(false)}
+        payment={selectedPaymentForReceipt}
+        student={student}
+      />
     </div>
   );
 }

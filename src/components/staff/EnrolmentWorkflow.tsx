@@ -14,9 +14,9 @@ import {
   CreditCard,
   FileText,
   CheckCircle,
-  X,
   Sparkles,
   AlertTriangle,
+  Printer,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { calculateAcademicStanding } from "@/lib/academic-engine";
+import { OfficialTranscriptModal } from "@/components/documents/OfficialTranscriptModal";
 
 interface EnrolmentWorkflowProps {
   students: any[];
@@ -53,6 +54,7 @@ export function EnrolmentWorkflow({
   // Modals & Drawers
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isTranscriptModalOpen, setIsTranscriptModalOpen] = useState(false);
   const [isStatusEditOpen, setIsStatusEditOpen] = useState(false);
   const [statusToUpdate, setStatusToUpdate] = useState<string>("ENROLLED");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -615,9 +617,20 @@ export function EnrolmentWorkflow({
                 </h3>
                 <span className="text-xs text-slate-500 dark:text-slate-400">{selectedStudent.email}</span>
               </div>
-              <div className="text-right">
-                {getStatusBadge(selectedStudent.status)}
-                <div className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+              <div className="flex flex-col sm:items-end gap-2">
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setIsTranscriptModalOpen(true)}
+                    className="text-xs h-7 px-2.5 font-bold"
+                  >
+                    <Printer className="w-3.5 h-3.5 mr-1.5 text-indigo-600 dark:text-indigo-400" />
+                    Print Transcript
+                  </Button>
+                  {getStatusBadge(selectedStudent.status)}
+                </div>
+                <div className="text-xs text-slate-400 dark:text-slate-500">
                   Enrolled: {formatDate(selectedStudent.createdAt)}
                 </div>
               </div>
@@ -728,6 +741,19 @@ export function EnrolmentWorkflow({
           </div>
         )}
       </Modal>
+
+      {/* Official Academic Transcript Modal */}
+      {selectedStudent && (
+        <OfficialTranscriptModal
+          isOpen={isTranscriptModalOpen}
+          onClose={() => setIsTranscriptModalOpen(false)}
+          student={selectedStudent}
+          academicStanding={calculateAcademicStanding(
+            selectedStudent.grades || [],
+            false
+          )}
+        />
+      )}
     </div>
   );
 }
