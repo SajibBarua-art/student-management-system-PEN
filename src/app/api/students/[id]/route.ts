@@ -71,10 +71,13 @@ export async function GET(
         internalAcademicStanding,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching student details:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch student details" },
+      {
+        success: false,
+        error: error?.message || "Failed to fetch student details",
+      },
       { status: 500 }
     );
   }

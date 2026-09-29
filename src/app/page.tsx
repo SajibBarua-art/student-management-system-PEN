@@ -44,8 +44,11 @@ export default function Home() {
       if (dataStats.success) setStats(dataStats.data);
       if (dataStudents.success) {
         setStudents(dataStudents.data);
-        if (!activeStudentId && dataStudents.data.length > 0) {
-          setActiveStudentId(dataStudents.data[0].id);
+        if (dataStudents.data.length > 0) {
+          setActiveStudentId((prev) => {
+            const exists = dataStudents.data.some((s: any) => s.id === prev);
+            return exists ? prev : dataStudents.data[0].id;
+          });
         }
       }
       if (dataProgrammes.success) setProgrammes(dataProgrammes.data);

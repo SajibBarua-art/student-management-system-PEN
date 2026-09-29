@@ -50,6 +50,7 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
   const [assessments, setAssessments] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"finance" | "assessments" | "marksheet">("assessments");
   const [isLoading, setIsLoading] = useState(true);
+  const [portalError, setPortalError] = useState<string | null>(null);
 
   // Upload modal state
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -136,6 +137,7 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
 
   const fetchStudentData = async () => {
     setIsLoading(true);
+    setPortalError(null);
     try {
       const [resStu, resAsm] = await Promise.all([
         fetch(`/api/students/${studentId}`),
@@ -146,12 +148,17 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
 
       if (dataStu.success) {
         setStudent(dataStu.data);
+      } else {
+        setPortalError(
+          dataStu.error || "Unable to access student candidate record."
+        );
       }
       if (dataAsm.success) {
         setAssessments(dataAsm.data);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load student portal data:", err);
+      setPortalError(err.message || "Network error loading student portal.");
     } finally {
       setIsLoading(false);
     }
@@ -212,11 +219,32 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
     }
   };
 
-  if (isLoading || !student) {
+  if (isLoading) {
     return (
       <div className="py-24 text-center text-slate-400">
         <div className="animate-spin inline-block w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full mb-3" />
         <p className="text-sm font-medium">Accessing Student Portal...</p>
+      </div>
+    );
+  }
+
+  if (portalError || !student) {
+    return (
+      <div className="py-16 text-center max-w-md mx-auto p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm">
+        <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/40 text-rose-600 flex items-center justify-center mx-auto mb-3">
+          <AlertCircle className="w-6 h-6" />
+        </div>
+        <h3 className="text-base font-bold text-slate-900 dark:text-white">
+          Unable to Access Student Record
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4 leading-relaxed">
+          {portalError ||
+            "The selected candidate profile could not be found or retrieved from the registry database."}
+        </p>
+        <Button variant="gradient" size="sm" onClick={fetchStudentData}>
+          <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+          Retry Access
+        </Button>
       </div>
     );
   }
