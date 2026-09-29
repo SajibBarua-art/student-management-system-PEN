@@ -10,8 +10,8 @@
 **RegistryOS** is an enterprise-grade university registry and academic lifecycle platform engineered for modern higher education institutions. Covering admissions, student finance, coursework assessments, examination board marksheet moderation, and compliance, RegistryOS enforces strict role-based access control (RBAC) across administrative, financial, academic, and student roles.
 
 ### Key Architecture Documents
-- 📖 [**PROJECT_DETAILS.md**](./PROJECT_DETAILS.md) — Comprehensive architecture, domain models, entity-relationship specifications, and edge-case handling.
-- 📡 [**API_DOCUMENTATION.md**](./API_DOCUMENTATION.md) — REST API endpoint reference, request/response payloads, and status codes.
+- [**PROJECT_DETAILS.md**](./PROJECT_DETAILS.md) — Comprehensive architecture, domain models, entity-relationship specifications, and edge-case handling.
+- [**API_DOCUMENTATION.md**](./API_DOCUMENTATION.md) — REST API endpoint reference, request/response payloads, and status codes.
 
 ---
 
@@ -66,10 +66,10 @@ RegistryOS features a live institutional persona switcher in the header navigati
 
 | Institutional Persona | Enrolment & Admissions | Tuition & Payments | Coursework & Submissions | Grading & Marksheet | Audit Trail |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Registry Administrator** | ✅ Full Access | ✅ Full Access | ✅ Full Access | ✅ Full Access | ✅ Full Access |
-| **Module Leader (Academics)** | 🔒 Restricted | 🔒 Restricted | ✅ Manage & Review | ✅ Grade & Moderate | ✅ View Trail |
-| **Bursar / Finance Officer** | ✅ View Students | ✅ Full Ledger & Plans | 🔒 Restricted | 🔒 Restricted | ✅ View Trail |
-| **Student (Self-Service)** | 🔒 Restricted | 📄 View Ledger | 📤 Upload Submissions | 🎓 View Published Grades | 🔒 Restricted |
+| **Registry Administrator** | Full Access | Full Access | Full Access | Full Access | Full Access |
+| **Module Leader (Academics)** | Restricted | Restricted | Manage & Review | Grade & Moderate | View Trail |
+| **Bursar / Finance Officer** | View Students | Full Ledger & Plans | Restricted | Restricted | View Trail |
+| **Student (Self-Service)** | Restricted | View Ledger | Upload Submissions | View Published Grades | Restricted |
 
 ### Persona-Aware Dashboard
 - **Dynamic Quick Actions**: Action buttons in the executive dashboard hero automatically adapt to the user's permissions (unauthorized actions are hidden).
