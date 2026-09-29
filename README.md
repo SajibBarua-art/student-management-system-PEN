@@ -1,57 +1,92 @@
 # RegistryOS — Higher Education Student Management System
 
-> **PEN Global (PEN Group) Technical Assessment — Registry Module**  
+> **PEN Global (PEN Group) Technical Assessment — Registry & Academic Operations Module**  
 > Built with Next.js 16 (App Router), PostgreSQL 18, Prisma ORM 7, and Tailwind CSS.
 
 ---
 
 ## Overview
 
-**RegistryOS** is a specialized web application covering the four daily core workflows of a University Registry Administrator. It provides an intuitive, high-performance interface with role separation between **Registry Staff** and **Students**, real-time financial tracking, coursework submission controls, and an Examination Board results publishing system.
+**RegistryOS** is an enterprise-grade university registry and academic lifecycle platform engineered for modern higher education institutions. Covering admissions, student finance, coursework assessments, examination board marksheet moderation, and compliance, RegistryOS enforces strict role-based access control (RBAC) across administrative, financial, academic, and student roles.
 
 ### Key Architecture Documents
-- 📖 [**PROJECT_DETAILS.md**](./PROJECT_DETAILS.md) — Architectural patterns, database entity modeling, domain rules, and edge-case handling.
-- 📡 [**API_DOCUMENTATION.md**](./API_DOCUMENTATION.md) — Comprehensive REST API endpoint reference, request/response schemas, and validation rules.
+- 📖 [**PROJECT_DETAILS.md**](./PROJECT_DETAILS.md) — Comprehensive architecture, domain models, entity-relationship specifications, and edge-case handling.
+- 📡 [**API_DOCUMENTATION.md**](./API_DOCUMENTATION.md) — REST API endpoint reference, request/response payloads, and status codes.
 
 ---
 
-## Core Workflows Implemented
+## Core Institutional Modules
 
-### 1. Student Enrolment
-- **Record Creation**: Register students with full name, email, date of birth, programme, academic year, and status (`Enrolled`, `Deferred`, `Withdrawn`, `Completed`).
-- **Automated ID Generation**: Unique Student IDs generated sequentially in the format `SMS-YYYY-XXXX` (e.g., `SMS-2025-0001`).
-- **Search & Filtering**: Search across names, student IDs, and emails, with filters by programme, enrolment status, or overdue fee flags.
+### 1. Student Enrolment & Lifecycle Management
+- **Record Creation**: Register students with full biographical data, date of birth, programme, cohort year, and status (`ENROLLED`, `DEFERRED`, `WITHDRAWN`, `COMPLETED`).
+- **Sequential Student ID Generation**: Deterministic, collision-resistant identifier format `SMS-YYYY-XXXX` (e.g., `SMS-2025-0001`).
 - **Tuition Fee Scheduling**: Enrolling a student automatically assigns the programme's standard annual tuition fee to their financial ledger.
+- **Search & Filter Matrix**: Instant client-side search across names, emails, and IDs, paired with multi-parameter filtering by programme, status, and fee balance flags.
 
-### 2. Fees & Payments
-- **Programme-Based Fee Assignment**: Tuitions are assigned based on the student's enrolled programme.
-- **Transaction Logging**: Record payments with amount, date, payment method, bank reference number (`TXN-YYYY-XXXXX`), and audit notes.
-- **Real-Time Balance Calculation**: Computes outstanding liabilities dynamically ($\sum \text{Fees} - \sum \text{Payments}$).
-- **Overdue Triage (Edge Case)**: Prominently flags students with overdue balances directly on the Registry Dashboard and student directories.
+### 2. Fees, Instalments & Financial Aid
+- **Programme-Based Fee Assignment**: Tuitions are calculated and assigned dynamically based on programme and degree level.
+- **Instalment Payment Plans**: Supports structured multi-term instalment plans (e.g. 3-Term split across Autumn, Spring, and Summer) with separate milestone deadlines.
+- **Scholarships & Fee Remissions**: Supports awarding merit scholarships, hardship grants, or fee reductions with full audit tracking.
+- **Transaction Ledger**: Records payments with transaction reference codes (`TXN-YYYY-XXXXX`), payment method (Bank Transfer, Card, Scholarship Credit), and receipt generation.
+- **Real-Time Balance & Overdue Triage**: Computes outstanding liabilities dynamically ($\sum \text{Fees} - \sum \text{Payments}$) with prominent visual alerts for overdue accounts.
 
-### 3. Assessment Submission
-- **Staff Assignment Creation**: Create module assessments with titles, module codes, descriptions, and submission deadlines.
-- **Strict File Type Restriction**: Student submissions are strictly validated to accept only `.pdf`, `.docx`, and `.doc` files.
-- **Single Submission & Resubmissions**: Enforces one submission per student per assessment, allowing students to resubmit files before the deadline passes (version counter increments).
-- **Late Submission Handling (Edge Case)**: Accepts initial submissions past the deadline to preserve student work, but automatically marks and visually flags them as **LATE SUBMISSION** in the staff interface.
+### 3. Coursework Assessments & Submissions
+- **Assessment Specifications**: Academic staff create module coursework with weighting, learning outcomes, submission deadlines, and grading rubrics.
+- **Strict File Type Restriction**: Submissions strictly enforce `.pdf`, `.docx`, and `.doc` MIME type validation.
+- **Versioned Resubmissions**: Enforces single active submission per student per assessment while permitting on-time revisions (version counter increments).
+- **Late Submission Flagging**: Submissions uploaded past the deadline are accepted to preserve academic evidence, but automatically flagged as **LATE SUBMISSION** with timestamp telemetry.
+- **Extenuating Circumstances (EC)**: Formal workflow for students facing bereavement or illness to request deadline extensions (+7 / +14 days) or late penalty waivers.
 
-### 4. Marksheet & Results
-- **Numeric Grading**: Staff enter numeric scores from `0` to `100` alongside qualitative feedback.
-- **Auto-Classification System**:
-  - **Distinction**: Grade $\ge 70\%$
-  - **Merit**: Grade $\ge 60\%$
-  - **Pass**: Grade $\ge 40\%$
-  - **Fail**: Grade $< 40\%$
-- **Result Publication & Privacy Control (Edge Case)**: Staff control result publication on a per-student basis. Students can only view their marksheet once formally published; withheld results display an Examination Board moderation notice.
+### 4. Marksheets, Moderation & Degree Classification
+- **UK Higher Education Grading**: Numeric scoring (`0`–`100`) mapped to standard UK Honours degree classifications:
+  - **Distinction / First Class (1st)**: $\ge 70\%$
+  - **Merit / Upper Second Class (2:1)**: $60 - 69.9\%$
+  - **Pass / Lower Second Class (2:2)**: $50 - 59.9\%$
+  - **Third Class (3rd)**: $40 - 49.9\%$
+  - **Fail / Resit Required**: $< 40\%$
+- **Examination Board Results Moderation**: Staff control results publication on a per-student and per-module basis. Withheld marks remain private to faculty during Board review and display an official moderation notice to students.
+- **Automated Progression Engine**: Calculates progression decisions (e.g., Progress to Next Year, Referral for Resit, Repeat Module, or Fail/Withdraw).
+
+### 5. Official Transcripts & Public QR Verification
+- **Official Transcript Generation**: High-fidelity, print-ready academic transcripts formatted to UK institutional standards with modular credit breakdowns, GPA/classification, and signature blocks.
+- **Cryptographic QR Code & Verification Portal**:
+  - Each transcript embeds a unique QR code pointing to `/verify?id=...&hash=...`.
+  - Employers and third parties can scan the QR code to reach the live, tamper-evident verification portal confirming authentic conferral directly against the university database.
+- **Clean Print & PDF Output**: Pure `@media print` styling removes navigation chrome and renders crisp vector typography.
+
+### 6. Institutional Compliance & Audit Trail
+- **Immutable Audit Logging**: Every high-impact institutional action (enrolment, grade modifications, marksheet publishing, fee waivers, extension approvals) generates a structured audit log entry (`AuditLog` entity).
+- **Compliance Inspector**: Dedicated administrative audit tab to investigate event histories by user persona, action category, and timestamp.
 
 ---
 
-## Role Separation
+## Role-Based Access Control (RBAC) & Personas
 
-The application includes an instant role toggle in the header navigation:
+RegistryOS features a live institutional persona switcher in the header navigation that demonstrates strict role separation:
 
-- **Staff View**: Executive command center, enrolment records, financial ledger, assessment manager, and marksheet grading tables.
-- **Student View**: Self-service student portal with a **Simulate Persona** selector (switch between demo students such as Amina Rahman, Liam O'Connor, Elena Rostova, Marcus Vance, Zainab Al-Mansoor, and David Chen). Provides digital ID card view, coursework uploads, certified marksheet, and personal tuition balance.
+| Institutional Persona | Enrolment & Admissions | Tuition & Payments | Coursework & Submissions | Grading & Marksheet | Audit Trail |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Registry Administrator** | ✅ Full Access | ✅ Full Access | ✅ Full Access | ✅ Full Access | ✅ Full Access |
+| **Module Leader (Academics)** | 🔒 Restricted | 🔒 Restricted | ✅ Manage & Review | ✅ Grade & Moderate | ✅ View Trail |
+| **Bursar / Finance Officer** | ✅ View Students | ✅ Full Ledger & Plans | 🔒 Restricted | 🔒 Restricted | ✅ View Trail |
+| **Student (Self-Service)** | 🔒 Restricted | 📄 View Ledger | 📤 Upload Submissions | 🎓 View Published Grades | 🔒 Restricted |
+
+### Persona-Aware Dashboard
+- **Dynamic Quick Actions**: Action buttons in the executive dashboard hero automatically adapt to the user's permissions (unauthorized actions are hidden).
+- **Module Lock Cards**: Navigation cards for restricted modules are visibly locked with `Lock` badges and role boundary descriptions.
+- **Contextual Notifications**: Academic leads see marksheet moderation alerts; Finance officers see tuition delinquency alerts.
+
+---
+
+## Technical Stack & Architecture
+
+- **Framework**: Next.js 16.3.6 (App Router, Server Components & Route Handlers)
+- **Runtime & UI**: React 19, TypeScript 5, Tailwind CSS
+- **Database**: PostgreSQL 18
+- **ORM & Data Modeling**: Prisma ORM 7 (`@prisma/client`)
+- **Icons & Visuals**: Lucide React
+- **Document Printing**: Pure CSS `@media print` with custom vector seals and watermarks
+- **State & Routing**: Deep URL tab synchronization (`?tab=overview|enrolment|fees|assessments|marksheet|audit`) preserving UI state across page refreshes.
 
 ---
 
@@ -61,12 +96,12 @@ The application includes an instant role toggle in the header navigation:
 - **Node.js**: v20.x or later (`node -v`)
 - **npm**: v10.x or later (`npm -v`)
 
-> **Note on PostgreSQL**: The project includes a zero-configuration native embedded PostgreSQL engine. Running `npm run dev` will automatically launch the database service on port `5433` without requiring Docker or root privileges. Alternatively, you can point `DATABASE_URL` to any external PostgreSQL instance (e.g. Supabase, Neon, or local Docker).
+> **PostgreSQL Configuration**: The project runs on PostgreSQL. A native background database service is configured on port `5433`. You can also configure `DATABASE_URL` in `.env` to point to any PostgreSQL instance (Supabase, Neon, Docker, or local service).
 
 ### Step 1: Clone the Repository
 ```bash
-git clone <repository-url>
-cd student-management-system
+git clone https://github.com/SajibBarua-art/student-management-system-PEN.git
+cd student-management-system-PEN
 ```
 
 ### Step 2: Install Dependencies
@@ -75,31 +110,28 @@ npm install
 ```
 
 ### Step 3: Configure Environment Variables
-Copy `.env.example` to create your local `.env`:
+Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
 
-Verify the `.env` settings:
+Verify your `.env`:
 ```env
-# Default connection string for local embedded PostgreSQL
 DATABASE_URL="postgresql://postgres:password@localhost:5433/sms_registry?schema=public"
-
 NODE_ENV="development"
 PORT="3000"
 ```
 
-### Step 4: Push Prisma Schema & Seed Demo Data
-Synchronize the database schema and populate realistic demo records:
+### Step 4: Apply Database Schema & Seed Data
 ```bash
-# Push schema to PostgreSQL
+# Push schema migrations to PostgreSQL
 npm run db:push
 
-# Populate demo data (programmes, students, fees, submissions, and grades)
+# Seed demo data (programmes, students, fee ledger, assessments, submissions, grades)
 npm run db:seed
 ```
 
-### Step 5: Start the Development Server
+### Step 5: Run Development Server
 ```bash
 npm run dev
 ```
@@ -108,42 +140,42 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## Seed Data Summary
+## Demo Persona Directory
 
-Running `npm run db:seed` provisions the database with realistic demo scenarios:
+Running `npm run db:seed` provisions realistic academic scenarios:
 
-| Student ID | Student Name | Programme | Status | Balance | Assessments & Marksheet Status |
+| Student ID | Student Name | Programme | Status | Balance | Academic & Marksheet Status |
 |---|---|---|---|---|---|
-| **SMS-2025-0001** | Amina Rahman | BSc Computer Science | `ENROLLED` | £0.00 (Paid in full) | Distinction (84.0%) — **Published** |
-| **SMS-2025-0002** | Liam O'Connor | BSc Computer Science | `ENROLLED` | £6,250.00 (**OVERDUE**) | Merit (64.0%) — Late Submission Flagged |
-| **SMS-2025-0003** | Elena Rostova | MSc Data Science & AI | `ENROLLED` | £0.00 (Paid in full) | Distinction (76.0%) — **WITHHELD** (Board Review) |
-| **SMS-2025-0004** | Marcus Vance | BSc Computer Science | `DEFERRED` | £8,250.00 (**OVERDUE**) | No submissions recorded |
-| **SMS-2025-0005** | Zainab Al-Mansoor | MBA | `COMPLETED` | £0.00 (Paid in full) | Distinction (88.0%) — **Published** |
-| **SMS-2025-0006** | David Chen | BSc Computer Science | `ENROLLED` | £9,250.00 (**OVERDUE**) | Fail (34.0%) — **Published** (Resit Required) |
+| **SMS-2025-0001** | Amina Rahman | BSc Computer Science | `ENROLLED` | £0.00 (Settled) | First Class (84.0%) — **Published** |
+| **SMS-2025-0002** | Liam O'Connor | BSc Computer Science | `ENROLLED` | £6,250.00 (**OVERDUE**) | Upper Second (64.0%) — Late Submission Flagged |
+| **SMS-2025-0003** | Elena Rostova | MSc Data Science & AI | `ENROLLED` | £0.00 (Settled) | Distinction (76.0%) — **WITHHELD** (Board Moderation) |
+| **SMS-2025-0004** | Marcus Vance | BSc Computer Science | `DEFERRED` | £8,250.00 (**OVERDUE**) | Extenuating Circumstances Pending |
+| **SMS-2025-0005** | Zainab Al-Mansoor | MBA | `COMPLETED` | £0.00 (Settled) | Distinction (88.0%) — **Conferred & Graduated** |
+| **SMS-2025-0006** | David Chen | BSc Computer Science | `ENROLLED` | £9,250.00 (**OVERDUE**) | Fail (34.0%) — Resit Scheduled |
 
 ---
 
 ## Available NPM Scripts
 
-- `npm run dev`: Automatically ensures PostgreSQL is active and launches the Next.js development server.
+- `npm run dev`: Starts the Next.js development server (with automatic PostgreSQL daemon validation).
 - `npm run build`: Compiles production build using Webpack.
-- `npm start`: Runs the production server.
-- `npm run db:start`: Starts the native PostgreSQL background service.
-- `npm run db:push`: Applies `prisma/schema.prisma` directly to the database.
-- `npm run db:seed`: Seeds demo students, programmes, fees, payments, assessments, and grades.
-- `npm run db:generate`: Regenerates the type-safe Prisma client.
+- `npm start`: Starts production server.
+- `npm run db:start`: Starts local PostgreSQL service daemon.
+- `npm run db:push`: Synchronizes `prisma/schema.prisma` with the target PostgreSQL database.
+- `npm run db:seed`: Seeds realistic demo students, assessments, submissions, grades, and audit records.
+- `npm run db:generate`: Regenerates the Prisma Client.
 
 ---
 
 ## AI Tools Usage Disclosure
 
-As encouraged by the technical assessment specification, AI assistance was utilized deliberately and strategically during development:
+In alignment with the technical assessment guidelines, AI tools were utilized strategically:
 
-1. **Architecture & Schema Design**:
-   - Leveraged AI to evaluate edge cases in academic registry lifecycles, specifically ensuring relational constraints (such as `[studentId, assessmentId]` uniqueness) prevent duplicate coursework uploads while preserving on-time resubmissions.
-2. **Boilerplate & TypeScript Typings**:
-   - Utilized AI to scaffold Next.js App Router route handlers, write schema validation guards, and format UK grading classification rules.
-3. **UI/UX Aesthetics & Visual Polish**:
-   - Employed AI to generate the tailored glassmorphism design tokens, CSS radial gradients, and responsive layouts, moving away from default starter templates into a bespoke executive aesthetic.
-4. **Testing & Verification**:
-   - Automated end-to-end user journey verification using headless browser subagents to ensure modal transitions, real-time balance calculations, and role toggling function reliably.
+1. **System Architecture & Data Modeling**:
+   - Leveraged AI to design relational integrity rules across PostgreSQL models (such as composite unique constraints preventing duplicate active submissions, and relational balance derivation).
+2. **Institutional Domain Rules**:
+   - Accelerated implementation of UK Higher Education degree classification formulas, moderation workflows, and instalment payment schedules.
+3. **Executive Visual Design & Aesthetics**:
+   - Generated modern glassmorphism design tokens, micro-animations, and dynamic persona-based dashboard layouts.
+4. **Verification & Testing**:
+   - Headless browser validation of critical user journeys (student enrolment modal, coursework submission, results publishing, transcript verification).
