@@ -11,7 +11,7 @@ export function Card({
     <div
       className={twMerge(
         clsx(
-          "relative rounded-2xl glass-card text-slate-100 overflow-hidden shadow-lg shadow-black/20",
+          "relative rounded-2xl glass-card text-slate-800 dark:text-slate-100 overflow-hidden shadow-sm dark:shadow-lg dark:shadow-black/20",
           className
         )
       )}
@@ -30,7 +30,7 @@ export function CardHeader({
   return (
     <div
       className={twMerge(
-        clsx("p-5 sm:p-6 border-b border-white/[0.06]", className)
+        clsx("p-5 sm:p-6 border-b border-slate-200/80 dark:border-white/[0.06]", className)
       )}
       {...props}
     >
@@ -47,7 +47,7 @@ export function CardTitle({
   return (
     <h3
       className={twMerge(
-        clsx("text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2", className)
+        clsx("text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2", className)
       )}
       {...props}
     >
@@ -64,7 +64,7 @@ export function CardDescription({
   return (
     <p
       className={twMerge(
-        clsx("text-xs text-slate-400 mt-1 leading-relaxed", className)
+        clsx("text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed", className)
       )}
       {...props}
     >
@@ -93,7 +93,7 @@ export function CardFooter({
   return (
     <div
       className={twMerge(
-        clsx("p-5 sm:p-6 pt-0 flex items-center justify-between border-t border-white/[0.04]", className)
+        clsx("p-5 sm:p-6 pt-0 flex items-center justify-between border-t border-slate-200/80 dark:border-white/[0.04]", className)
       )}
       {...props}
     >

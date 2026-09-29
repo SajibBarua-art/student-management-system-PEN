@@ -270,28 +270,28 @@ export function MarksheetWorkflow({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Marksheet & Results Publication
             </h2>
             <Badge variant="purple">Examination Board</Badge>
           </div>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Enter 0–100 numeric scores, review auto-classifications, and control per-student result visibility.
           </p>
         </div>
 
         {/* Assessment Selector */}
         <div className="flex items-center gap-2">
-          <label className="text-xs font-bold text-slate-300 whitespace-nowrap">
+          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
             Assessment:
           </label>
           <select
             value={selectedAssessmentId}
             onChange={(e) => setSelectedAssessmentId(e.target.value)}
-            className="px-3.5 py-2 text-xs sm:text-sm bg-slate-900 border border-white/10 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold cursor-pointer max-w-xs truncate"
+            className="px-3.5 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold cursor-pointer max-w-xs truncate"
           >
             {assessments.map((a) => (
-              <option key={a.id} value={a.id} className="bg-[#111625]">
+              <option key={a.id} value={a.id} className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">
                 {a.moduleCode} — {a.title}
               </option>
             ))}
@@ -307,29 +307,29 @@ export function MarksheetWorkflow({
 
       {/* Classification Legend Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <div className="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/25 text-center">
-          <span className="font-extrabold text-emerald-400 block text-sm">
+        <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-500/25 text-center">
+          <span className="font-extrabold text-emerald-700 dark:text-emerald-400 block text-sm">
             Distinction
           </span>
-          <span className="text-[11px] text-emerald-500/80 font-medium">Grade ≥ 70%</span>
+          <span className="text-[11px] text-emerald-600 dark:text-emerald-500/80 font-medium">Grade ≥ 70%</span>
         </div>
-        <div className="p-3.5 rounded-2xl bg-sky-950/20 border border-sky-500/25 text-center">
-          <span className="font-extrabold text-sky-400 block text-sm">
+        <div className="p-3.5 rounded-2xl bg-sky-50 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-500/25 text-center">
+          <span className="font-extrabold text-sky-700 dark:text-sky-400 block text-sm">
             Merit
           </span>
-          <span className="text-[11px] text-sky-500/80 font-medium">Grade ≥ 60%</span>
+          <span className="text-[11px] text-sky-600 dark:text-sky-500/80 font-medium">Grade ≥ 60%</span>
         </div>
-        <div className="p-3.5 rounded-2xl bg-amber-950/20 border border-amber-500/25 text-center">
-          <span className="font-extrabold text-amber-400 block text-sm">
+        <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-500/25 text-center">
+          <span className="font-extrabold text-amber-700 dark:text-amber-400 block text-sm">
             Pass
           </span>
-          <span className="text-[11px] text-amber-500/80 font-medium">Grade ≥ 40%</span>
+          <span className="text-[11px] text-amber-600 dark:text-amber-500/80 font-medium">Grade ≥ 40%</span>
         </div>
-        <div className="p-3.5 rounded-2xl bg-rose-950/20 border border-rose-500/25 text-center">
-          <span className="font-extrabold text-rose-400 block text-sm">
+        <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-500/25 text-center">
+          <span className="font-extrabold text-rose-700 dark:text-rose-400 block text-sm">
             Fail (Resit Required)
           </span>
-          <span className="text-[11px] text-rose-500/80 font-medium">Grade &lt; 40%</span>
+          <span className="text-[11px] text-rose-600 dark:text-rose-500/80 font-medium">Grade &lt; 40%</span>
         </div>
       </div>
 
@@ -342,7 +342,7 @@ export function MarksheetWorkflow({
                 ? `${currentAssessment.moduleCode}: ${currentAssessment.title}`
                 : "Assessment Marksheet"}
             </CardTitle>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Results marked 'Withheld' will remain completely hidden from the student portal until published by Registry.
             </p>
           </div>
@@ -355,7 +355,7 @@ export function MarksheetWorkflow({
               isLoading={batchActionLoading}
               className="text-xs"
             >
-              <EyeOff className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
+              <EyeOff className="w-3.5 h-3.5 mr-1.5 text-amber-500 dark:text-amber-400" />
               Withhold All
             </Button>
             <Button
@@ -373,7 +373,7 @@ export function MarksheetWorkflow({
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm">
-            <thead className="bg-slate-900/90 text-slate-400 font-bold border-b border-white/[0.08]">
+            <thead className="bg-slate-50 dark:bg-slate-900/90 text-slate-600 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-white/[0.08]">
               <tr>
                 <th className="py-3.5 px-5">Student</th>
                 <th className="py-3.5 px-5">Submission</th>
@@ -385,7 +385,7 @@ export function MarksheetWorkflow({
                 <th className="py-3.5 px-5 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.05]">
+            <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
               {students.map((student) => {
                 const sub = currentAssessment?.submissions?.find(
                   (s: any) => s.studentId === student.id
@@ -402,14 +402,14 @@ export function MarksheetWorkflow({
                 return (
                   <tr
                     key={student.id}
-                    className="hover:bg-white/[0.03] transition-colors"
+                    className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03] transition-colors"
                   >
                     {/* Student Info */}
                     <td className="py-3.5 px-5">
-                      <div className="font-bold text-white">
+                      <div className="font-bold text-slate-900 dark:text-white">
                         {student.fullName}
                       </div>
-                      <div className="text-[11px] font-mono text-indigo-400">
+                      <div className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400">
                         {student.studentId}
                       </div>
                     </td>
@@ -423,7 +423,7 @@ export function MarksheetWorkflow({
                           <Badge variant="success" dot>On-Time (v{sub.version})</Badge>
                         )
                       ) : (
-                        <span className="text-[11px] text-slate-500 italic">
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 italic">
                           Not Submitted
                         </span>
                       )}
@@ -436,7 +436,7 @@ export function MarksheetWorkflow({
                           href={sub.fileUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 font-bold"
+                          className="inline-flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
                         >
                           <Download className="w-3.5 h-3.5" />
                           <span className="max-w-[120px] truncate">
@@ -444,7 +444,7 @@ export function MarksheetWorkflow({
                           </span>
                         </a>
                       ) : (
-                        <span className="text-slate-500 text-xs">—</span>
+                        <span className="text-slate-400 dark:text-slate-500 text-xs">—</span>
                       )}
                     </td>
 
@@ -461,9 +461,9 @@ export function MarksheetWorkflow({
                           onChange={(e) =>
                             handleGradeInputChange(student.id, e.target.value)
                           }
-                          className="w-20 px-2.5 py-1 text-sm bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-extrabold text-center"
+                          className="w-20 px-2.5 py-1 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-extrabold text-center"
                         />
-                        <span className="text-xs text-slate-500 font-mono">/100</span>
+                        <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">/100</span>
                       </div>
                     </td>
 
@@ -485,7 +485,7 @@ export function MarksheetWorkflow({
                           {row.classification}
                         </Badge>
                       ) : (
-                        <span className="text-slate-500 text-xs italic">Ungraded</span>
+                        <span className="text-slate-400 dark:text-slate-500 text-xs italic">Ungraded</span>
                       )}
                     </td>
 
@@ -498,7 +498,7 @@ export function MarksheetWorkflow({
                         onChange={(e) =>
                           handleFeedbackChange(student.id, e.target.value)
                         }
-                        className="w-full px-3 py-1.5 text-xs bg-slate-900 border border-white/10 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                       />
                     </td>
 
@@ -515,8 +515,8 @@ export function MarksheetWorkflow({
                         }
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                           row.isPublished
-                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-xs shadow-emerald-950/40"
-                            : "bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-xs shadow-amber-950/40"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/40"
+                            : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40"
                         } disabled:opacity-40 disabled:cursor-not-allowed`}
                       >
                         {row.isPublished ? (

@@ -50,24 +50,24 @@ export function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       {/* Deep frosted backdrop */}
       <div
-        className="fixed inset-0 bg-[#07090f]/80 backdrop-blur-md transition-opacity animate-in fade-in duration-200"
+        className="fixed inset-0 bg-slate-900/60 dark:bg-[#07090f]/80 backdrop-blur-md transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
       />
 
       {/* Modal Dialog */}
       <div
-        className={`relative w-full ${maxWidthClasses[maxWidth]} bg-[#111624] border border-white/10 rounded-2xl shadow-2xl shadow-black/80 z-10 overflow-hidden transform transition-all animate-in zoom-in-95 duration-200 my-8 text-slate-100`}
+        className={`relative w-full ${maxWidthClasses[maxWidth]} bg-white dark:bg-[#111624] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl shadow-slate-900/20 dark:shadow-black/80 z-10 overflow-hidden transform transition-all animate-in zoom-in-95 duration-200 my-8 text-slate-800 dark:text-slate-100`}
       >
         {/* Subtle accent top border glow */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-sky-500" />
 
-        <div className="flex items-start justify-between p-6 pb-4 border-b border-white/[0.06]">
+        <div className="flex items-start justify-between p-6 pb-4 border-b border-slate-200 dark:border-white/[0.06]">
           <div>
-            <h3 className="text-lg font-bold text-white tracking-tight">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
               {title}
             </h3>
             {description && (
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                 {description}
               </p>
             )}
@@ -75,7 +75,8 @@ export function Modal({
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/[0.08] transition-colors cursor-pointer"
+            aria-label="Close modal"
+            className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>

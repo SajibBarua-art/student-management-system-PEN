@@ -164,12 +164,12 @@ export function EnrolmentWorkflow({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Student Enrolment Registry
             </h2>
             <Badge variant="purple">{students.length} Total Registered</Badge>
           </div>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Register students with auto-generated IDs, assign programme fee schedules, and filter active records.
           </p>
         </div>
@@ -190,7 +190,7 @@ export function EnrolmentWorkflow({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by name, student ID, or email..."
-              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-900/90 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -199,11 +199,11 @@ export function EnrolmentWorkflow({
             <select
               value={selectedProgramme}
               onChange={(e) => setSelectedProgramme(e.target.value)}
-              className="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-900/90 border border-white/10 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
             >
-              <option value="all" className="bg-[#111625]">All Programmes</option>
+              <option value="all" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">All Programmes</option>
               {programmes.map((p) => (
-                <option key={p.id} value={p.id} className="bg-[#111625]">
+                <option key={p.id} value={p.id} className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">
                   {p.code} - {p.name}
                 </option>
               ))}
@@ -215,13 +215,13 @@ export function EnrolmentWorkflow({
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full px-3.5 py-2 text-xs sm:text-sm bg-slate-900/90 border border-white/10 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
             >
-              <option value="all" className="bg-[#111625]">All Statuses</option>
-              <option value="ENROLLED" className="bg-[#111625]">Enrolled</option>
-              <option value="DEFERRED" className="bg-[#111625]">Deferred</option>
-              <option value="WITHDRAWN" className="bg-[#111625]">Withdrawn</option>
-              <option value="COMPLETED" className="bg-[#111625]">Completed</option>
+              <option value="all" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">All Statuses</option>
+              <option value="ENROLLED" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Enrolled</option>
+              <option value="DEFERRED" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Deferred</option>
+              <option value="WITHDRAWN" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Withdrawn</option>
+              <option value="COMPLETED" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Completed</option>
             </select>
           </div>
 
@@ -232,11 +232,11 @@ export function EnrolmentWorkflow({
               onClick={() => setOverdueOnly(!overdueOnly)}
               className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                 overdueOnly
-                  ? "bg-rose-500/20 border-rose-500/40 text-rose-300"
-                  : "bg-slate-900/70 border-white/10 text-slate-400 hover:text-slate-200"
+                  ? "bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-500/20 dark:border-rose-500/40 dark:text-rose-300"
+                  : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 dark:bg-slate-900/70 dark:border-white/10 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
-              <AlertTriangle className={`w-3.5 h-3.5 ${overdueOnly ? "text-rose-400" : "text-slate-500"}`} />
+              <AlertTriangle className={`w-3.5 h-3.5 ${overdueOnly ? "text-rose-500 dark:text-rose-400" : "text-slate-400 dark:text-slate-500"}`} />
               <span>Overdue Only</span>
             </button>
           </div>
@@ -247,7 +247,7 @@ export function EnrolmentWorkflow({
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm">
-            <thead className="bg-slate-900/90 text-slate-400 font-bold border-b border-white/[0.08]">
+            <thead className="bg-slate-50 dark:bg-slate-900/90 text-slate-600 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-white/[0.08]">
               <tr>
                 <th className="py-4 px-5">Student</th>
                 <th className="py-4 px-5">Student ID</th>
@@ -258,7 +258,7 @@ export function EnrolmentWorkflow({
                 <th className="py-4 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.05]">
+            <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
               {isLoading ? (
                 <tr>
                   <td colSpan={7} className="py-16 text-center text-slate-400">
@@ -268,7 +268,7 @@ export function EnrolmentWorkflow({
                 </tr>
               ) : filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-slate-400">
+                  <td colSpan={7} className="py-16 text-center text-slate-500 dark:text-slate-400">
                     No student records found matching the active filters.
                   </td>
                 </tr>
@@ -284,7 +284,7 @@ export function EnrolmentWorkflow({
                   return (
                     <tr
                       key={student.id}
-                      className="hover:bg-white/[0.03] transition-colors"
+                      className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03] transition-colors"
                     >
                       {/* Avatar & Name */}
                       <td className="py-4 px-5">
@@ -293,10 +293,10 @@ export function EnrolmentWorkflow({
                             {initials}
                           </div>
                           <div>
-                            <div className="font-bold text-white">
+                            <div className="font-bold text-slate-900 dark:text-white">
                               {student.fullName}
                             </div>
-                            <div className="text-slate-400 text-xs">
+                            <div className="text-slate-500 dark:text-slate-400 text-xs">
                               {student.email}
                             </div>
                           </div>
@@ -304,22 +304,22 @@ export function EnrolmentWorkflow({
                       </td>
 
                       {/* ID */}
-                      <td className="py-4 px-5 font-mono font-bold text-indigo-400">
+                      <td className="py-4 px-5 font-mono font-bold text-indigo-600 dark:text-indigo-400">
                         {student.studentId}
                       </td>
 
                       {/* Programme */}
                       <td className="py-4 px-5">
-                        <div className="font-semibold text-slate-200">
+                        <div className="font-semibold text-slate-800 dark:text-slate-200">
                           {student.programme?.code}
                         </div>
-                        <div className="text-[11px] text-slate-400 truncate max-w-[180px]">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[180px]">
                           {student.programme?.name}
                         </div>
                       </td>
 
                       {/* Year */}
-                      <td className="py-4 px-5 text-slate-300 font-medium">
+                      <td className="py-4 px-5 text-slate-700 dark:text-slate-300 font-medium">
                         {student.academicYear}
                       </td>
 
@@ -334,8 +334,8 @@ export function EnrolmentWorkflow({
                           <span
                             className={`font-bold ${
                               student.balance > 0
-                                ? "text-slate-200"
-                                : "text-emerald-400"
+                                ? "text-slate-900 dark:text-slate-200"
+                                : "text-emerald-600 dark:text-emerald-400"
                             }`}
                           >
                             {formatCurrency(student.balance)}
@@ -358,7 +358,7 @@ export function EnrolmentWorkflow({
                               setIsDetailModalOpen(true);
                             }}
                             title="Inspect Student Dossier"
-                            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
+                            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-colors cursor-pointer"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
@@ -370,7 +370,7 @@ export function EnrolmentWorkflow({
                               setIsStatusEditOpen(true);
                             }}
                             title="Change Enrolment Status"
-                            className="p-2 rounded-xl text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                            className="p-2 rounded-xl text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors cursor-pointer"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
@@ -379,7 +379,7 @@ export function EnrolmentWorkflow({
                               type="button"
                               onClick={() => onOpenPaymentModal(student.id)}
                               title="Record Payment"
-                              className="p-2 rounded-xl text-emerald-400 hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                              className="p-2 rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors cursor-pointer"
                             >
                               <CreditCard className="w-4 h-4" />
                             </button>
@@ -405,27 +405,27 @@ export function EnrolmentWorkflow({
       >
         <form onSubmit={handleCreateStudent} className="space-y-4">
           {formError && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs rounded-xl">
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-500/10 dark:border-rose-500/30 dark:text-rose-300 text-xs rounded-xl">
               {formError}
             </div>
           )}
 
-          <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/25 flex items-center justify-between">
+          <div className="p-4 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl border border-indigo-200 dark:border-indigo-500/25 flex items-center justify-between">
             <div>
-              <span className="text-[10px] text-indigo-300 uppercase tracking-wider font-bold block">
+              <span className="text-[10px] text-indigo-600 dark:text-indigo-300 uppercase tracking-wider font-bold block">
                 Next Auto-Generated Student ID
               </span>
-              <span className="font-mono font-extrabold text-white text-base">
+              <span className="font-mono font-extrabold text-slate-900 dark:text-white text-base">
                 SMS-2025-XXXX (Sequential Sequence)
               </span>
             </div>
-            <span className="text-[10px] font-bold text-indigo-300 bg-indigo-500/20 px-3 py-1 rounded-full border border-indigo-500/30">
+            <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-500/20 px-3 py-1 rounded-full border border-indigo-200 dark:border-indigo-500/30">
               System Assigned
             </span>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
               Full Legal Name *
             </label>
             <input
@@ -436,13 +436,13 @@ export function EnrolmentWorkflow({
               onChange={(e) =>
                 setFormData({ ...formData, fullName: e.target.value })
               }
-              className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                 Institutional Email *
               </label>
               <input
@@ -453,11 +453,11 @@ export function EnrolmentWorkflow({
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                 Date of Birth *
               </label>
               <input
@@ -467,14 +467,14 @@ export function EnrolmentWorkflow({
                 onChange={(e) =>
                   setFormData({ ...formData, dateOfBirth: e.target.value })
                 }
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                 Academic Programme *
               </label>
               <select
@@ -482,17 +482,17 @@ export function EnrolmentWorkflow({
                 onChange={(e) =>
                   setFormData({ ...formData, programmeId: e.target.value })
                 }
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
               >
                 {programmes.map((p) => (
-                  <option key={p.id} value={p.id} className="bg-[#111625]">
+                  <option key={p.id} value={p.id} className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">
                     {p.code} - {p.name}
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                 Academic Year *
               </label>
               <input
@@ -503,13 +503,13 @@ export function EnrolmentWorkflow({
                 onChange={(e) =>
                   setFormData({ ...formData, academicYear: e.target.value })
                 }
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
               Enrolment Status *
             </label>
             <select
@@ -517,29 +517,29 @@ export function EnrolmentWorkflow({
               onChange={(e) =>
                 setFormData({ ...formData, status: e.target.value })
               }
-              className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
             >
-              <option value="ENROLLED" className="bg-[#111625]">Enrolled (Active)</option>
-              <option value="DEFERRED" className="bg-[#111625]">Deferred</option>
-              <option value="WITHDRAWN" className="bg-[#111625]">Withdrawn</option>
-              <option value="COMPLETED" className="bg-[#111625]">Completed</option>
+              <option value="ENROLLED" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Enrolled (Active)</option>
+              <option value="DEFERRED" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Deferred</option>
+              <option value="WITHDRAWN" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Withdrawn</option>
+              <option value="COMPLETED" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Completed</option>
             </select>
           </div>
 
           {selectedProgrammeDetails && (
-            <div className="p-3.5 bg-slate-900/80 rounded-xl border border-white/10 text-xs text-slate-300 leading-relaxed">
-              <span className="font-bold text-white block mb-0.5">
+            <div className="p-3.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-white/10 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              <span className="font-bold text-slate-900 dark:text-white block mb-0.5">
                 Automatic Tuition Fee Assignment:
               </span>
               Enrolling in {selectedProgrammeDetails.name} will automatically create a fee schedule of{" "}
-              <strong className="text-indigo-400">
+              <strong className="text-indigo-600 dark:text-indigo-400">
                 {formatCurrency(selectedProgrammeDetails.standardFee)}
               </strong>{" "}
               due in 30 days.
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/[0.08]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-white/[0.08]">
             <Button
               type="button"
               variant="outline"
@@ -564,22 +564,22 @@ export function EnrolmentWorkflow({
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
               Select New Enrolment Status
             </label>
             <select
               value={statusToUpdate}
               onChange={(e) => setStatusToUpdate(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
             >
-              <option value="ENROLLED" className="bg-[#111625]">Enrolled (Active)</option>
-              <option value="DEFERRED" className="bg-[#111625]">Deferred</option>
-              <option value="WITHDRAWN" className="bg-[#111625]">Withdrawn</option>
-              <option value="COMPLETED" className="bg-[#111625]">Completed</option>
+              <option value="ENROLLED" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Enrolled (Active)</option>
+              <option value="DEFERRED" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Deferred</option>
+              <option value="WITHDRAWN" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Withdrawn</option>
+              <option value="COMPLETED" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Completed</option>
             </select>
           </div>
 
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/[0.08]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-white/[0.08]">
             <Button
               type="button"
               variant="outline"
@@ -602,21 +602,21 @@ export function EnrolmentWorkflow({
         maxWidth="xl"
       >
         {selectedStudent && (
-          <div className="space-y-5 text-slate-200">
+          <div className="space-y-5 text-slate-700 dark:text-slate-200">
             {/* Header info */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-slate-900/80 border border-white/10 gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 gap-3">
               <div>
-                <span className="font-mono text-xs text-indigo-400 font-bold block">
+                <span className="font-mono text-xs text-indigo-600 dark:text-indigo-400 font-bold block">
                   {selectedStudent.studentId}
                 </span>
-                <h3 className="text-xl font-bold text-white">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                   {selectedStudent.fullName}
                 </h3>
-                <span className="text-xs text-slate-400">{selectedStudent.email}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">{selectedStudent.email}</span>
               </div>
               <div className="text-right">
                 {getStatusBadge(selectedStudent.status)}
-                <div className="text-xs text-slate-500 mt-1">
+                <div className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                   Enrolled: {formatDate(selectedStudent.createdAt)}
                 </div>
               </div>
@@ -624,29 +624,29 @@ export function EnrolmentWorkflow({
 
             {/* Quick Details Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div className="p-3.5 bg-slate-900/60 border border-white/[0.06] rounded-xl">
-                <span className="text-slate-400 block mb-0.5">Programme</span>
-                <span className="font-bold text-white">
+              <div className="p-3.5 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl">
+                <span className="text-slate-500 dark:text-slate-400 block mb-0.5">Programme</span>
+                <span className="font-bold text-slate-900 dark:text-white">
                   {selectedStudent.programme?.code}
                 </span>
               </div>
-              <div className="p-3.5 bg-slate-900/60 border border-white/[0.06] rounded-xl">
-                <span className="text-slate-400 block mb-0.5">Academic Year</span>
-                <span className="font-bold text-white">
+              <div className="p-3.5 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl">
+                <span className="text-slate-500 dark:text-slate-400 block mb-0.5">Academic Year</span>
+                <span className="font-bold text-slate-900 dark:text-white">
                   {selectedStudent.academicYear}
                 </span>
               </div>
-              <div className="p-3.5 bg-slate-900/60 border border-white/[0.06] rounded-xl">
-                <span className="text-slate-400 block mb-0.5">Date of Birth</span>
-                <span className="font-bold text-white">
+              <div className="p-3.5 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl">
+                <span className="text-slate-500 dark:text-slate-400 block mb-0.5">Date of Birth</span>
+                <span className="font-bold text-slate-900 dark:text-white">
                   {formatDate(selectedStudent.dateOfBirth)}
                 </span>
               </div>
-              <div className="p-3.5 bg-slate-900/60 border border-white/[0.06] rounded-xl">
-                <span className="text-slate-400 block mb-0.5">Fee Balance</span>
+              <div className="p-3.5 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl">
+                <span className="text-slate-500 dark:text-slate-400 block mb-0.5">Fee Balance</span>
                 <span
                   className={`font-bold ${
-                    selectedStudent.balance > 0 ? "text-rose-400" : "text-emerald-400"
+                    selectedStudent.balance > 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
                   }`}
                 >
                   {formatCurrency(selectedStudent.balance)}
@@ -656,11 +656,11 @@ export function EnrolmentWorkflow({
 
             {/* Assessment Grades */}
             <div>
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+              <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                 Assessment Grades Recorded
               </h4>
               {selectedStudent.grades?.length === 0 ? (
-                <p className="text-xs text-slate-500 italic p-4 bg-slate-900/50 rounded-xl border border-white/[0.04]">
+                <p className="text-xs text-slate-500 italic p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-white/[0.04]">
                   No grades recorded for this student yet.
                 </p>
               ) : (
@@ -668,18 +668,18 @@ export function EnrolmentWorkflow({
                   {selectedStudent.grades?.map((g: any) => (
                     <div
                       key={g.id}
-                      className="p-3 bg-slate-900/80 rounded-xl border border-white/[0.06] flex items-center justify-between text-xs"
+                      className="p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-white/[0.06] flex items-center justify-between text-xs"
                     >
                       <div>
-                        <span className="font-bold text-white block">
+                        <span className="font-bold text-slate-900 dark:text-white block">
                           {g.assessment?.title}
                         </span>
-                        <span className="text-slate-400 font-mono">
+                        <span className="text-slate-500 dark:text-slate-400 font-mono">
                           {g.assessment?.moduleCode}
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-bold text-base text-white">
+                        <span className="font-bold text-base text-slate-900 dark:text-white">
                           {g.numericGrade}%
                         </span>
                         <Badge variant="outline">{g.classification}</Badge>

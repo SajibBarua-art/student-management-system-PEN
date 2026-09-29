@@ -151,11 +151,11 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.06] bg-[#0b0e17]/80 backdrop-blur-xl py-5 text-center text-xs text-slate-400">
+      <footer className="border-t border-slate-200/80 dark:border-white/[0.06] bg-white/80 dark:bg-[#0b0e17]/80 backdrop-blur-xl py-5 text-center text-xs text-slate-500 dark:text-slate-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-white">RegistryOS</span>
-            <span className="text-slate-500">•</span>
+            <span className="font-extrabold text-slate-900 dark:text-white">RegistryOS</span>
+            <span className="text-slate-400 dark:text-slate-500">•</span>
             <span>PEN Global Higher Education Management</span>
           </div>
           <div className="flex items-center gap-3 text-[11px] font-mono text-slate-500">

@@ -116,12 +116,12 @@ export function AssessmentsWorkflow({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Assessment Management & Workflows
             </h2>
             <Badge variant="purple">{assessments.length} Total Modules</Badge>
           </div>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Configure coursework assignments, define strict submission deadlines, and review student file uploads.
           </p>
         </div>
@@ -138,10 +138,10 @@ export function AssessmentsWorkflow({
           <p className="text-sm">Loading module assessments...</p>
         </div>
       ) : assessments.length === 0 ? (
-        <Card className="p-10 text-center text-slate-400">
-          <FileText className="w-10 h-10 mx-auto text-slate-500 mb-2" />
-          <p className="text-sm font-semibold text-white">No assessments configured yet.</p>
-          <p className="text-xs text-slate-400 mt-1">
+        <Card className="p-10 text-center text-slate-500 dark:text-slate-400">
+          <FileText className="w-10 h-10 mx-auto text-slate-400 dark:text-slate-500 mb-2" />
+          <p className="text-sm font-semibold text-slate-900 dark:text-white">No assessments configured yet.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Click "Create New Assessment" to set up your first module submission deadline.
           </p>
         </Card>
@@ -159,10 +159,10 @@ export function AssessmentsWorkflow({
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                      <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/20">
                         {asm.moduleCode}
                       </span>
-                      <span className="text-xs text-slate-400 font-medium">{asm.academicYear}</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{asm.academicYear}</span>
                     </div>
                     {hasPassed ? (
                       <Badge variant="secondary">Deadline Passed</Badge>
@@ -170,56 +170,56 @@ export function AssessmentsWorkflow({
                       <Badge variant="success" dot>Active / Open</Badge>
                     )}
                   </div>
-                  <CardTitle className="text-base sm:text-lg mt-3">{asm.title}</CardTitle>
-                  <p className="text-xs text-slate-400 font-medium">{asm.moduleName}</p>
+                  <CardTitle className="text-base sm:text-lg mt-3 text-slate-900 dark:text-white">{asm.title}</CardTitle>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{asm.moduleName}</p>
                 </CardHeader>
 
                 <CardContent className="py-3 text-xs space-y-3">
                   {asm.description && (
-                    <p className="text-slate-300 line-clamp-2 leading-relaxed">
+                    <p className="text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
                       {asm.description}
                     </p>
                   )}
 
-                  <div className="flex items-center gap-2 text-slate-300 font-medium bg-slate-900/60 p-2.5 rounded-xl border border-white/[0.04]">
-                    <Clock className="w-4 h-4 text-indigo-400 shrink-0" />
+                  <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium bg-slate-100/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200 dark:border-white/[0.04]">
+                    <Clock className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                     <span>Official Deadline: {formatDateTime(asm.deadline)}</span>
                   </div>
 
                   {/* Submission Statistics Bar */}
-                  <div className="grid grid-cols-3 gap-2 p-3 bg-slate-900/80 rounded-xl border border-white/[0.06] text-center">
+                  <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-white/[0.06] text-center">
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">
                         Submissions
                       </span>
-                      <span className="font-extrabold text-base text-white">
+                      <span className="font-extrabold text-base text-slate-900 dark:text-white">
                         {asm.stats.totalSubmissions}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">
                         Late Flagged
                       </span>
                       <span
                         className={`font-extrabold text-base ${
-                          lateCount > 0 ? "text-amber-400" : "text-slate-500"
+                          lateCount > 0 ? "text-amber-500 dark:text-amber-400" : "text-slate-400 dark:text-slate-500"
                         }`}
                       >
                         {lateCount}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">
                         Graded
                       </span>
-                      <span className="font-extrabold text-base text-emerald-400">
+                      <span className="font-extrabold text-base text-emerald-600 dark:text-emerald-400">
                         {asm.stats.gradedCount}
                       </span>
                     </div>
                   </div>
                 </CardContent>
 
-                <div className="p-4 sm:p-5 pt-0 flex items-center justify-between gap-2 border-t border-white/[0.04]">
+                <div className="p-4 sm:p-5 pt-0 flex items-center justify-between gap-2 border-t border-slate-200 dark:border-white/[0.04]">
                   <Button
                     size="sm"
                     variant="outline"
@@ -258,13 +258,13 @@ export function AssessmentsWorkflow({
       >
         <form onSubmit={handleCreateAssessment} className="space-y-4">
           {formError && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs rounded-xl">
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-500/10 dark:border-rose-500/30 dark:text-rose-300 text-xs rounded-xl">
               {formError}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
               Assessment Title *
             </label>
             <input
@@ -273,13 +273,13 @@ export function AssessmentsWorkflow({
               placeholder="e.g. Coursework 1: Advanced Distributed Systems"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                 Module Code *
               </label>
               <input
@@ -290,11 +290,11 @@ export function AssessmentsWorkflow({
                 onChange={(e) =>
                   setFormData({ ...formData, moduleCode: e.target.value })
                 }
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                 Module Name *
               </label>
               <input
@@ -305,14 +305,14 @@ export function AssessmentsWorkflow({
                 onChange={(e) =>
                   setFormData({ ...formData, moduleName: e.target.value })
                 }
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                 Submission Deadline *
               </label>
               <input
@@ -322,11 +322,11 @@ export function AssessmentsWorkflow({
                 onChange={(e) =>
                   setFormData({ ...formData, deadline: e.target.value })
                 }
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                 Associated Programme (Optional)
               </label>
               <select
@@ -334,11 +334,11 @@ export function AssessmentsWorkflow({
                 onChange={(e) =>
                   setFormData({ ...formData, programmeId: e.target.value })
                 }
-                className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
               >
-                <option value="" className="bg-[#111625]">All Programmes</option>
+                <option value="" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">All Programmes</option>
                 {programmes.map((p) => (
-                  <option key={p.id} value={p.id} className="bg-[#111625]">
+                  <option key={p.id} value={p.id} className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">
                     {p.code} - {p.name}
                   </option>
                 ))}
@@ -347,7 +347,7 @@ export function AssessmentsWorkflow({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
               Assessment Instructions & Deliverables
             </label>
             <textarea
@@ -357,11 +357,11 @@ export function AssessmentsWorkflow({
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
-              className="w-full px-3.5 py-2.5 text-sm bg-slate-900 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/[0.08]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-white/[0.08]">
             <Button
               type="button"
               variant="outline"
@@ -390,13 +390,13 @@ export function AssessmentsWorkflow({
       >
         {selectedAssessmentForSubmissions && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3.5 bg-slate-900/80 rounded-xl border border-white/10 text-xs">
+            <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-white/10 text-xs">
               <div>
-                <span className="font-bold text-white block">
+                <span className="font-bold text-slate-900 dark:text-white block">
                   {selectedAssessmentForSubmissions.moduleCode} —{" "}
                   {selectedAssessmentForSubmissions.moduleName}
                 </span>
-                <span className="text-slate-400 block mt-0.5">
+                <span className="text-slate-500 dark:text-slate-400 block mt-0.5">
                   Official Deadline:{" "}
                   {formatDateTime(selectedAssessmentForSubmissions.deadline)}
                 </span>
@@ -416,24 +416,24 @@ export function AssessmentsWorkflow({
             </div>
 
             {selectedAssessmentForSubmissions.submissions.length === 0 ? (
-              <p className="text-xs text-slate-400 italic p-8 text-center bg-slate-900/50 rounded-xl border border-white/[0.04]">
+              <p className="text-xs text-slate-500 dark:text-slate-400 italic p-8 text-center bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-white/[0.04]">
                 No students have uploaded files for this assessment yet.
               </p>
             ) : (
-              <div className="divide-y divide-white/[0.05]">
+              <div className="divide-y divide-slate-100 dark:divide-white/[0.05]">
                 {selectedAssessmentForSubmissions.submissions.map((sub: any) => (
                   <div
                     key={sub.id}
                     className={`py-3.5 px-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl transition-colors ${
-                      sub.isLate ? "bg-rose-500/[0.06] border border-rose-500/20" : ""
+                      sub.isLate ? "bg-rose-50/70 border border-rose-200 dark:bg-rose-500/[0.06] dark:border-rose-500/20" : ""
                     }`}
                   >
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-white text-sm">
+                        <span className="font-bold text-slate-900 dark:text-white text-sm">
                           {sub.student?.fullName}
                         </span>
-                        <span className="font-mono text-xs text-indigo-400">
+                        <span className="font-mono text-xs text-indigo-600 dark:text-indigo-400">
                           ({sub.student?.studentId})
                         </span>
                         {/* Edge Case: Visual Late Submission Flag */}
@@ -442,17 +442,17 @@ export function AssessmentsWorkflow({
                         ) : (
                           <Badge variant="success" dot>ON-TIME</Badge>
                         )}
-                        <span className="text-[11px] text-slate-400 font-mono">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                           v{sub.version}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-slate-400 mt-1">
-                        <span className="font-mono text-slate-300">{sub.fileName}</span>
+                      <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        <span className="font-mono text-slate-700 dark:text-slate-300">{sub.fileName}</span>
                         <span>•</span>
                         <span>Submitted: {formatDateTime(sub.submittedAt)}</span>
                       </div>
                       {sub.notes && (
-                        <p className="text-[11px] text-slate-400 italic mt-1">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 italic mt-1">
                           Student note: "{sub.notes}"
                         </p>
                       )}
@@ -463,9 +463,9 @@ export function AssessmentsWorkflow({
                         href={sub.fileUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/15 text-xs font-semibold text-slate-200 hover:bg-white/[0.08] transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/15 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-colors"
                       >
-                        <Download className="w-3.5 h-3.5 text-indigo-400" />
+                        <Download className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                         Download
                       </a>
                     </div>
@@ -474,7 +474,7 @@ export function AssessmentsWorkflow({
               </div>
             )}
 
-            <div className="flex items-center justify-end pt-3 border-t border-white/[0.08]">
+            <div className="flex items-center justify-end pt-3 border-t border-slate-200 dark:border-white/[0.08]">
               <Button
                 variant="gradient"
                 onClick={() => {
