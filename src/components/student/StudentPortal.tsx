@@ -722,6 +722,75 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
             </Card>
           </div>
 
+          {/* Fee Billing Schedule & Scholarships */}
+          <Card>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <CardTitle className="text-sm">Fee Billing Schedule & Scholarships</CardTitle>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Itemized modular tuition tranches, lab levies, and institutional scholarship awards.
+                </p>
+              </div>
+              {student.fees?.some((f: any) => f.feeType === "INSTALMENT_TRANCHE") && (
+                <Badge variant="purple" dot>
+                  3-Tranche Instalment Plan Active
+                </Badge>
+              )}
+            </CardHeader>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs sm:text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-900/90 text-slate-600 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-white/[0.08]">
+                  <tr>
+                    <th className="py-3 px-5">Billing Item / Tranche</th>
+                    <th className="py-3 px-5">Category</th>
+                    <th className="py-3 px-5">Scheduled Due Date</th>
+                    <th className="py-3 px-5 text-right">Invoiced Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
+                  {student.fees?.map((fee: any) => (
+                    <tr key={fee.id} className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03]">
+                      <td className="py-3 px-5 font-semibold text-slate-900 dark:text-white">
+                        {fee.description}
+                      </td>
+                      <td className="py-3 px-5">
+                        <Badge
+                          variant={
+                            fee.amount < 0
+                              ? "success"
+                              : fee.feeType === "INSTALMENT_TRANCHE"
+                              ? "purple"
+                              : "secondary"
+                          }
+                        >
+                          {fee.amount < 0
+                            ? "SCHOLARSHIP / WAIVER"
+                            : fee.feeType === "INSTALMENT_TRANCHE"
+                            ? "INSTALMENT TRANCHE"
+                            : "STANDARD TUITION"}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-5 text-slate-600 dark:text-slate-400">
+                        {fee.amount < 0 ? "Credited to Ledger" : formatDate(fee.dueDate)}
+                      </td>
+                      <td
+                        className={`py-3 px-5 text-right font-extrabold font-mono ${
+                          fee.amount < 0
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-slate-900 dark:text-white"
+                        }`}
+                      >
+                        {fee.amount < 0
+                          ? `-${formatCurrency(Math.abs(fee.amount))}`
+                          : formatCurrency(fee.amount)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
           {/* Transactions list */}
           <Card>
             <CardHeader>

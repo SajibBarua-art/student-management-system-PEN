@@ -74,18 +74,28 @@ model Student {
   @@index([programmeId])
 }
 
+enum FeeType {
+  TUITION
+  INSTALMENT_TRANCHE
+  SCHOLARSHIP_WAIVER
+  HARDSHIP_BURSARY
+  ADMINISTRATIVE
+}
+
 model StudentFee {
   id           String   @id @default(cuid())
   studentId    String
   student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   amount       Float
   description  String
+  feeType      FeeType  @default(TUITION)
   dueDate      DateTime
   academicYear String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   @@index([studentId])
+  @@index([feeType])
 }
 
 model Payment {
