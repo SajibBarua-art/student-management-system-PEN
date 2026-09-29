@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
       description,
       programmeId,
       totalMarks,
+      credits,
       academicYear,
     } = body;
 
@@ -104,6 +105,7 @@ export async function POST(req: NextRequest) {
         description: description?.trim() || null,
         programmeId: programmeId || null,
         totalMarks: totalMarks ? parseInt(totalMarks, 10) : 100,
+        credits: credits ? parseInt(credits, 10) : 15,
         academicYear: academicYear || "2024/2025",
       },
       include: {

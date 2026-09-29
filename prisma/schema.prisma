@@ -99,6 +99,7 @@ model Assessment {
   description  String?
   deadline     DateTime
   totalMarks   Int          @default(100)
+  credits      Int          @default(15) // Modular credit weighting (e.g., 15 or 30 CATS/ECTS credits)
   academicYear String
   submissions  Submission[]
   grades       Grade[]

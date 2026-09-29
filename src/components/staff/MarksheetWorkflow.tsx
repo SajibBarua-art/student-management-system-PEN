@@ -339,7 +339,7 @@ export function MarksheetWorkflow({
           <div>
             <CardTitle>
               {currentAssessment
-                ? `${currentAssessment.moduleCode}: ${currentAssessment.title}`
+                ? `${currentAssessment.moduleCode}: ${currentAssessment.title} (${currentAssessment.credits || 15} Credits)`
                 : "Assessment Marksheet"}
             </CardTitle>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">

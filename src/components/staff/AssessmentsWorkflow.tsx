@@ -47,6 +47,7 @@ export function AssessmentsWorkflow({
     deadline: "",
     description: "",
     totalMarks: "100",
+    credits: "15",
     academicYear: "2024/2025",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,6 +101,7 @@ export function AssessmentsWorkflow({
         deadline: "",
         description: "",
         totalMarks: "100",
+        credits: "15",
         academicYear: "2024/2025",
       });
       fetchAssessments();
@@ -158,9 +160,12 @@ export function AssessmentsWorkflow({
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/20">
                         {asm.moduleCode}
+                      </span>
+                      <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/20">
+                        {asm.credits || 15} Credits
                       </span>
                       <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{asm.academicYear}</span>
                     </div>
@@ -343,6 +348,36 @@ export function AssessmentsWorkflow({
                   </option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                Modular Credit Weighting (CATS/ECTS) *
+              </label>
+              <select
+                value={formData.credits}
+                onChange={(e) => setFormData({ ...formData, credits: e.target.value })}
+                className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold cursor-pointer"
+              >
+                <option value="15">15 Credits (Standard Module)</option>
+                <option value="30">30 Credits (Double Module / Project)</option>
+                <option value="45">45 Credits (Major Capstone)</option>
+                <option value="60">60 Credits (Dissertation / Thesis)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                Academic Year *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.academicYear}
+                onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
+                className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
           </div>
 

@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { formatCurrency, formatDate } from "@/lib/formatters";
+import { calculateAcademicStanding } from "@/lib/academic-engine";
 
 interface EnrolmentWorkflowProps {
   students: any[];
@@ -653,6 +654,38 @@ export function EnrolmentWorkflow({
                 </span>
               </div>
             </div>
+
+            {/* Academic Standing & WAM */}
+            {(() => {
+              const standing = calculateAcademicStanding(selectedStudent.grades || [], false);
+              return (
+                <div className="p-3.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] uppercase font-bold text-indigo-700 dark:text-indigo-400">
+                        Academic Standing & Progression
+                      </span>
+                      <Badge variant={standing.badgeVariant} dot>
+                        {standing.standingLabel}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 font-medium mt-0.5">
+                      {standing.awardClassification} • {standing.progressionDecision}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-right shrink-0">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">WAM:</span>
+                    <span className="font-mono text-base font-black text-indigo-600 dark:text-indigo-400">
+                      {standing.wam}%
+                    </span>
+                    <span className="text-slate-400">•</span>
+                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      {standing.totalEarnedCredits} Credits Earned
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Assessment Grades */}
             <div>

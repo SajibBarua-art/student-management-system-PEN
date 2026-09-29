@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { calculateAcademicStanding } from "@/lib/academic-engine";
 
 export async function GET(
   req: NextRequest,
@@ -49,6 +50,9 @@ export async function GET(
       (f) => new Date(f.dueDate) < now && balance > 0
     );
 
+    const academicStanding = calculateAcademicStanding(student.grades, true);
+    const internalAcademicStanding = calculateAcademicStanding(student.grades, false);
+
     return NextResponse.json({
       success: true,
       data: {
@@ -57,6 +61,8 @@ export async function GET(
         totalPaid,
         balance,
         isOverdue,
+        academicStanding,
+        internalAcademicStanding,
       },
     });
   } catch (error) {

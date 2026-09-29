@@ -36,6 +36,7 @@ import {
   getClassificationBadgeColor,
   getClassificationLabel,
 } from "@/lib/grade-classification";
+import { calculateAcademicStanding } from "@/lib/academic-engine";
 
 interface StudentPortalProps {
   studentId: string;
@@ -145,6 +146,7 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
 
   const publishedGrades = student.grades?.filter((g: any) => g.isPublished) || [];
   const withheldGradesCount = (student.grades?.length || 0) - publishedGrades.length;
+  const academicStanding = student.academicStanding || calculateAcademicStanding(student.grades || [], true);
 
   return (
     <div className="space-y-6">
@@ -168,6 +170,11 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
                   {student.studentId}
                 </span>
                 <Badge variant="purple" dot>{student.status}</Badge>
+                {academicStanding.standing !== "IN_PROGRESS" && (
+                  <Badge variant={academicStanding.badgeVariant} dot>
+                    {academicStanding.standingLabel}
+                  </Badge>
+                )}
               </div>
 
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-medium">
@@ -177,7 +184,21 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-3 shrink-0 flex-wrap">
+            {publishedGrades.length > 0 && (
+              <div className="p-3.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 backdrop-blur-md text-right shadow-sm dark:shadow-none">
+                <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider block">
+                  Weighted Average (WAM)
+                </span>
+                <span className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400 block font-mono">
+                  {academicStanding.wam}%
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block">
+                  {academicStanding.totalEarnedCredits} Credits Earned
+                </span>
+              </div>
+            )}
+
             <div className="p-3.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 backdrop-blur-md text-right shadow-sm dark:shadow-none">
               <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider block">
                 Tuition Balance
@@ -399,6 +420,49 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
             </Alert>
           )}
 
+          {/* Academic Progression & Honours Standing Card */}
+          {publishedGrades.length > 0 && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-50/80 via-purple-50/40 to-white dark:from-indigo-950/30 dark:via-slate-900/60 dark:to-slate-900/40 border border-indigo-100 dark:border-indigo-500/20 shadow-xs">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs uppercase font-extrabold tracking-wider text-indigo-700 dark:text-indigo-400">
+                      Academic Standing & Progression
+                    </span>
+                    <Badge variant={academicStanding.badgeVariant} dot>
+                      {academicStanding.standingLabel}
+                    </Badge>
+                  </div>
+                  <h4 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
+                    {academicStanding.awardClassification}
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+                    {academicStanding.progressionDecision}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 text-center shrink-0">
+                  <div className="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 shadow-xs">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">
+                      Weighted Mark (WAM)
+                    </span>
+                    <span className="text-lg font-black font-mono text-indigo-600 dark:text-indigo-400">
+                      {academicStanding.wam}%
+                    </span>
+                  </div>
+                  <div className="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 shadow-xs">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">
+                      Credits Accumulated
+                    </span>
+                    <span className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400">
+                      {academicStanding.totalEarnedCredits} / {academicStanding.totalAttemptedCredits}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {publishedGrades.length === 0 ? (
             <Card className="p-14 text-center">
               <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-400 mx-auto mb-3">
@@ -418,6 +482,7 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
                   <thead className="bg-slate-50 dark:bg-slate-900/90 text-slate-600 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-white/[0.08]">
                     <tr>
                       <th className="py-3.5 px-5">Module Code</th>
+                      <th className="py-3.5 px-5">Credits</th>
                       <th className="py-3.5 px-5">Assessment Title</th>
                       <th className="py-3.5 px-5">Numeric Grade</th>
                       <th className="py-3.5 px-5">Classification</th>
@@ -433,6 +498,11 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
                       >
                         <td className="py-4 px-5 font-mono font-bold text-indigo-600 dark:text-indigo-400">
                           {grade.assessment?.moduleCode}
+                        </td>
+                        <td className="py-4 px-5">
+                          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/20">
+                            {grade.assessment?.credits || 15} Credits
+                          </span>
                         </td>
                         <td className="py-4 px-5 font-bold text-slate-900 dark:text-white">
                           {grade.assessment?.title}
