@@ -170,6 +170,13 @@ export default function Home() {
     updateUrl(role, "marksheet", persona, activeStudentId);
   };
 
+  // Open enrol modal for new student
+  const handleOpenEnrolModal = () => {
+    setActiveStaffTab("enrolment");
+    updateUrl(role, "enrolment", persona, activeStudentId);
+    setIsEnrolModalOpen(true);
+  };
+
   // Open payment modal for specific student
   const handleOpenPaymentModal = (studentId?: string) => {
     if (studentId) {
@@ -248,8 +255,9 @@ export default function Home() {
             {activeStaffTab === "overview" && (
               <OverviewDashboard
                 stats={stats}
+                persona={persona}
                 onNavigateTab={handleStaffTabChange}
-                onOpenEnrolModal={() => setIsEnrolModalOpen(true)}
+                onOpenEnrolModal={handleOpenEnrolModal}
                 onOpenPaymentModal={handleOpenPaymentModal}
               />
             )}

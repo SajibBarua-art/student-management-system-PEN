@@ -17,15 +17,19 @@ import {
   ArrowUpRight,
   GraduationCap,
   Percent,
+  Lock,
+  ShieldCheck,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { formatCurrency } from "@/lib/formatters";
+import { InstitutionalPersona } from "@/components/layout/Navbar";
 
 interface OverviewProps {
   stats: any;
+  persona?: InstitutionalPersona;
   onNavigateTab: (tab: string) => void;
   onOpenEnrolModal: () => void;
   onOpenPaymentModal: (studentId?: string) => void;
@@ -33,6 +37,7 @@ interface OverviewProps {
 
 export function OverviewDashboard({
   stats,
+  persona = "REGISTRY_ADMIN",
   onNavigateTab,
   onOpenEnrolModal,
   onOpenPaymentModal,
@@ -53,6 +58,13 @@ export function OverviewDashboard({
       ? Math.round((finances.totalCollected / finances.totalAssigned) * 100)
       : 0;
 
+  // RBAC Permission Checks
+  const canAccessEnrolment = persona === "REGISTRY_ADMIN" || persona === "BURSAR_FINANCE";
+  const canAccessFees = persona === "REGISTRY_ADMIN" || persona === "BURSAR_FINANCE";
+  const canAccessAssessments = persona === "REGISTRY_ADMIN" || persona === "MODULE_LEADER";
+  const canAccessMarksheet = persona === "REGISTRY_ADMIN" || persona === "MODULE_LEADER";
+  const canAccessAudit = persona === "REGISTRY_ADMIN" || persona === "MODULE_LEADER" || persona === "BURSAR_FINANCE";
+
   return (
     <div className="space-y-6">
       {/* Executive Command Center Hero */}
@@ -65,51 +77,99 @@ export function OverviewDashboard({
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200/80 dark:border-indigo-500/20 text-xs font-bold text-indigo-700 dark:text-indigo-300 mb-3 backdrop-blur-xs">
               <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-              <span>Registry Operations Center • PostgreSQL Live Ledger</span>
+              <span>
+                {persona === "MODULE_LEADER"
+                  ? "Academic Command Center • Module Leader View"
+                  : persona === "BURSAR_FINANCE"
+                  ? "Finance & Bursary Directorate • Cashier Ledger"
+                  : "Registry Operations Center • PostgreSQL Live Ledger"}
+              </span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-              Higher Education <br className="hidden sm:block" />
+              {persona === "MODULE_LEADER"
+                ? "Academic Curriculum &"
+                : persona === "BURSAR_FINANCE"
+                ? "Bursary & Student"
+                : "Higher Education"} <br className="hidden sm:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-sky-600 dark:from-indigo-400 dark:via-purple-300 dark:to-sky-400">
-                Registry Administration
+                {persona === "MODULE_LEADER"
+                  ? "Examination Board"
+                  : persona === "BURSAR_FINANCE"
+                  ? "Finance Administration"
+                  : "Registry Administration"}
               </span>
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-2.5 leading-relaxed">
-              Real-time student lifecycle tracking, fee assignment and ledger balance monitoring, coursework assessment submissions, and Examination Board marksheet management.
+              {persona === "MODULE_LEADER"
+                ? "Direct management of course assessments, submission tracking, 0–100 grading classification, and Examination Board grade ratification."
+                : persona === "BURSAR_FINANCE"
+                ? "Comprehensive fee assignment monitoring, instalment plan setup, bursary scholarship reductions, and payment reconciliation."
+                : "Real-time student lifecycle tracking, fee assignment and ledger balance monitoring, coursework assessment submissions, and Examination Board marksheet management."}
             </p>
           </div>
 
-          {/* Quick Action Buttons */}
+          {/* Quick Action Buttons (Filtered by Persona RBAC) */}
           <div className="flex flex-wrap sm:flex-col gap-2.5 shrink-0">
-            <Button
-              onClick={onOpenEnrolModal}
-              variant="gradient"
-              className="text-xs sm:text-sm"
-            >
-              <PlusCircle className="w-4 h-4 mr-2" />
-              Enrol New Student
-            </Button>
-            <Button
-              onClick={() => onOpenPaymentModal()}
-              variant="secondary"
-              className="text-xs sm:text-sm border border-slate-200 dark:border-white/10"
-            >
-              <CreditCard className="w-4 h-4 mr-2 text-indigo-600 dark:text-indigo-400" />
-              Record Payment
-            </Button>
-            <Button
-              onClick={() => onNavigateTab("assessments")}
-              variant="outline"
-              className="text-xs sm:text-sm border border-slate-200 dark:border-white/10"
-            >
-              <FileCheck className="w-4 h-4 mr-2 text-sky-600 dark:text-sky-400" />
-              Active Assessments ({assessments.open})
-            </Button>
+            {canAccessEnrolment && (
+              <Button
+                onClick={onOpenEnrolModal}
+                variant="gradient"
+                className="text-xs sm:text-sm"
+              >
+                <PlusCircle className="w-4 h-4 mr-2" />
+                Enrol New Student
+              </Button>
+            )}
+
+            {canAccessFees && (
+              <Button
+                onClick={() => onOpenPaymentModal()}
+                variant="secondary"
+                className="text-xs sm:text-sm border border-slate-200 dark:border-white/10"
+              >
+                <CreditCard className="w-4 h-4 mr-2 text-indigo-600 dark:text-indigo-400" />
+                Record Payment
+              </Button>
+            )}
+
+            {canAccessAssessments && (
+              <Button
+                onClick={() => onNavigateTab("assessments")}
+                variant="outline"
+                className="text-xs sm:text-sm border border-slate-200 dark:border-white/10"
+              >
+                <FileCheck className="w-4 h-4 mr-2 text-sky-600 dark:text-sky-400" />
+                Active Assessments ({assessments.open})
+              </Button>
+            )}
+
+            {canAccessMarksheet && (
+              <Button
+                onClick={() => onNavigateTab("marksheet")}
+                variant={persona === "MODULE_LEADER" ? "gradient" : "outline"}
+                className="text-xs sm:text-sm border border-slate-200 dark:border-white/10"
+              >
+                <Award className="w-4 h-4 mr-2 text-violet-600 dark:text-violet-400" />
+                Marksheet & Moderation
+              </Button>
+            )}
+
+            {canAccessAudit && (
+              <Button
+                onClick={() => onNavigateTab("audit")}
+                variant="outline"
+                className="text-xs sm:text-sm border border-slate-200 dark:border-white/10"
+              >
+                <ShieldCheck className="w-4 h-4 mr-2 text-indigo-600 dark:text-indigo-400" />
+                Audit Trail
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Prominent Overdue Fees Attention Banner (Edge Case Requirement) */}
-      {finances.overdueCount > 0 && (
+      {/* Prominent Overdue Fees Attention Banner (Restricted to Bursar & Registry Admin) */}
+      {canAccessFees && finances.overdueCount > 0 && (
         <div className="relative overflow-hidden rounded-2xl border border-rose-200 dark:border-rose-500/30 bg-rose-50/90 dark:bg-gradient-to-r dark:from-rose-950/40 dark:via-slate-900/60 dark:to-slate-900/40 backdrop-blur-md p-5 sm:p-6 shadow-sm dark:shadow-xl">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-3.5">
@@ -274,67 +334,173 @@ export function OverviewDashboard({
         </Card>
       </div>
 
-      {/* Navigation Quick Cards */}
+      {/* Module Leader Academic Moderation Attention Banner */}
+      {persona === "MODULE_LEADER" && grades.withheld > 0 && (
+        <div className="relative overflow-hidden rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-amber-50/90 dark:bg-gradient-to-r dark:from-amber-950/40 dark:via-slate-900/60 dark:to-slate-900/40 backdrop-blur-md p-5 sm:p-6 shadow-sm dark:shadow-xl">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+                <Award className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
+                    Academic Board Attention: {grades.withheld} Marksheet(s) Withheld for Moderation
+                  </h4>
+                  <Badge variant="warning" dot>Action Required</Badge>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                  Examination Board review is pending for withheld marks. Review modular classifications and ratify grades:
+                </p>
+              </div>
+            </div>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onNavigateTab("marksheet")}
+              className="shrink-0 text-xs border-amber-300 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/10"
+            >
+              Open Marksheet
+              <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Navigation Quick Cards with RBAC Access Protection */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div
-          onClick={() => onNavigateTab("enrolment")}
-          className="p-5 rounded-2xl glass-card hover:border-indigo-400 dark:hover:border-indigo-500/40 cursor-pointer group"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              1. Student Enrolment
-            </span>
-            <ArrowUpRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+        {/* 1. Student Enrolment */}
+        {canAccessEnrolment ? (
+          <div
+            onClick={() => onNavigateTab("enrolment")}
+            className="p-5 rounded-2xl glass-card hover:border-indigo-400 dark:hover:border-indigo-500/40 cursor-pointer group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                1. Student Enrolment
+              </span>
+              <ArrowUpRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Auto-generate SMS IDs, manage student profiles, and maintain enrolment lifecycles.
+            </p>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            Auto-generate SMS IDs, manage student profiles, and maintain enrolment lifecycles.
-          </p>
-        </div>
+        ) : (
+          <div className="p-5 rounded-2xl border border-slate-200/60 dark:border-white/5 bg-slate-100/50 dark:bg-slate-900/30 opacity-60 cursor-not-allowed select-none">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                1. Student Enrolment
+                <Lock className="w-3.5 h-3.5 text-slate-400" />
+              </span>
+              <Badge variant="outline" className="text-[9px] py-0 px-1.5 text-slate-400">
+                Admin / Bursar Only
+              </Badge>
+            </div>
+            <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
+              Student registration and identity lifecycle is restricted to Registry Administration.
+            </p>
+          </div>
+        )}
 
-        <div
-          onClick={() => onNavigateTab("fees")}
-          className="p-5 rounded-2xl glass-card hover:border-indigo-400 dark:hover:border-indigo-500/40 cursor-pointer group"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              2. Fees & Payments
-            </span>
-            <ArrowUpRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+        {/* 2. Fees & Payments */}
+        {canAccessFees ? (
+          <div
+            onClick={() => onNavigateTab("fees")}
+            className="p-5 rounded-2xl glass-card hover:border-indigo-400 dark:hover:border-indigo-500/40 cursor-pointer group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                2. Fees & Payments
+              </span>
+              <ArrowUpRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Real-time balance tracking, bank reference payments, and overdue fee alerts.
+            </p>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            Real-time balance tracking, bank reference payments, and overdue fee alerts.
-          </p>
-        </div>
+        ) : (
+          <div className="p-5 rounded-2xl border border-slate-200/60 dark:border-white/5 bg-slate-100/50 dark:bg-slate-900/30 opacity-60 cursor-not-allowed select-none">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                2. Fees & Payments
+                <Lock className="w-3.5 h-3.5 text-slate-400" />
+              </span>
+              <Badge variant="outline" className="text-[9px] py-0 px-1.5 text-slate-400">
+                Bursar Only
+              </Badge>
+            </div>
+            <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
+              Fee assignment and payment transactions are restricted to Bursar Finance.
+            </p>
+          </div>
+        )}
 
-        <div
-          onClick={() => onNavigateTab("assessments")}
-          className="p-5 rounded-2xl glass-card hover:border-indigo-400 dark:hover:border-indigo-500/40 cursor-pointer group"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              3. Assessments
-            </span>
-            <ArrowUpRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+        {/* 3. Assessments */}
+        {canAccessAssessments ? (
+          <div
+            onClick={() => onNavigateTab("assessments")}
+            className="p-5 rounded-2xl glass-card hover:border-indigo-400 dark:hover:border-indigo-500/40 cursor-pointer group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                3. Assessments
+              </span>
+              <ArrowUpRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Module assignments with deadlines, student PDF/DOCX uploads, and late flagging.
+            </p>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            Module assignments with deadlines, student PDF/DOCX uploads, and late flagging.
-          </p>
-        </div>
+        ) : (
+          <div className="p-5 rounded-2xl border border-slate-200/60 dark:border-white/5 bg-slate-100/50 dark:bg-slate-900/30 opacity-60 cursor-not-allowed select-none">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                3. Assessments
+                <Lock className="w-3.5 h-3.5 text-slate-400" />
+              </span>
+              <Badge variant="outline" className="text-[9px] py-0 px-1.5 text-slate-400">
+                Academics Only
+              </Badge>
+            </div>
+            <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
+              Curricular coursework and student uploads are restricted to Academic Leaders.
+            </p>
+          </div>
+        )}
 
-        <div
-          onClick={() => onNavigateTab("marksheet")}
-          className="p-5 rounded-2xl glass-card hover:border-indigo-400 dark:hover:border-indigo-500/40 cursor-pointer group"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              4. Marksheets & Results
-            </span>
-            <ArrowUpRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+        {/* 4. Marksheets & Results */}
+        {canAccessMarksheet ? (
+          <div
+            onClick={() => onNavigateTab("marksheet")}
+            className="p-5 rounded-2xl glass-card hover:border-indigo-400 dark:hover:border-indigo-500/40 cursor-pointer group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                4. Marksheets & Results
+              </span>
+              <ArrowUpRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              0–100 grading, Pass/Merit/Distinction classifications, and publish/withhold controls.
+            </p>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            0–100 grading, Pass/Merit/Distinction classifications, and publish/withhold controls.
-          </p>
-        </div>
+        ) : (
+          <div className="p-5 rounded-2xl border border-slate-200/60 dark:border-white/5 bg-slate-100/50 dark:bg-slate-900/30 opacity-60 cursor-not-allowed select-none">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                4. Marksheets & Results
+                <Lock className="w-3.5 h-3.5 text-slate-400" />
+              </span>
+              <Badge variant="outline" className="text-[9px] py-0 px-1.5 text-slate-400">
+                Academics Only
+              </Badge>
+            </div>
+            <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
+              Examination Board modular grading and moderation is restricted to Academic Leaders.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
