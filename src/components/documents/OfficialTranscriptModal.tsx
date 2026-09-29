@@ -116,6 +116,94 @@ function DocumentQrCode({ value, size = 110 }: { value: string; size?: number })
   );
 }
 
+/**
+ * Authentic Vector University Seal
+ * Rendered as pure SVG with mathematically bounded concentric rings and typography,
+ * guaranteeing zero text wrapping or circular boundary overflow across all PDF renderers.
+ */
+function UniversitySeal({ size = 74 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      className="shrink-0 select-none"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Outer seal rings */}
+      <circle cx="50" cy="50" r="47" stroke="#1e1b4b" strokeWidth="2.5" />
+      <circle cx="50" cy="50" r="43.5" stroke="#1e1b4b" strokeWidth="0.8" strokeDasharray="1.5, 1.5" />
+      <circle cx="50" cy="50" r="32" stroke="#1e1b4b" strokeWidth="1" />
+
+      {/* Top arc label */}
+      <text
+        x="50"
+        y="21"
+        textAnchor="middle"
+        fill="#1e1b4b"
+        fontSize="5.2"
+        fontWeight="800"
+        letterSpacing="0.8"
+        fontFamily="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+      >
+        UNIVERSITY SEAL
+      </text>
+
+      {/* Decorative stars */}
+      <circle cx="34" cy="32" r="1.2" fill="#1e1b4b" />
+      <circle cx="66" cy="32" r="1.2" fill="#1e1b4b" />
+
+      {/* Central Latin Motto */}
+      <text
+        x="50"
+        y="48"
+        textAnchor="middle"
+        fill="#1e1b4b"
+        fontSize="11"
+        fontFamily="Georgia, Cambria, 'Times New Roman', serif"
+        fontStyle="italic"
+        fontWeight="bold"
+        letterSpacing="0.5"
+      >
+        VERITAS
+      </text>
+
+      {/* Center divider rule */}
+      <line x1="33" y1="53" x2="67" y2="53" stroke="#1e1b4b" strokeWidth="0.8" />
+      <circle cx="50" cy="53" r="1.5" fill="#1e1b4b" />
+
+      {/* Registry Office label */}
+      <text
+        x="50"
+        y="62"
+        textAnchor="middle"
+        fill="#1e1b4b"
+        fontSize="5.2"
+        fontWeight="800"
+        letterSpacing="0.6"
+        fontFamily="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+      >
+        REGISTRY OFFICE
+      </text>
+
+      {/* Bottom stars / Senate House */}
+      <text
+        x="50"
+        y="78"
+        textAnchor="middle"
+        fill="#1e1b4b"
+        fontSize="4.8"
+        fontWeight="700"
+        letterSpacing="1"
+        fontFamily="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+      >
+        ★ SENATE HOUSE ★
+      </text>
+    </svg>
+  );
+}
+
 export function OfficialTranscriptModal({
   isOpen,
   onClose,
@@ -249,8 +337,9 @@ export function OfficialTranscriptModal({
             {/* Document Header */}
             <div className="border-b-2 border-slate-900 pb-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-900 text-white flex items-center justify-center font-serif text-2xl font-bold shadow-md shrink-0">
-                  U
+                <div className="w-16 h-16 rounded-2xl bg-indigo-950 text-white flex flex-col items-center justify-center font-serif shadow-md shrink-0 border border-indigo-800">
+                  <span className="text-2xl font-black leading-none tracking-tight">U</span>
+                  <span className="text-[7px] uppercase font-sans tracking-widest text-indigo-300 mt-1 font-bold">EST. 1965</span>
                 </div>
                 <div>
                   <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wider text-slate-900 font-serif">
@@ -454,12 +543,8 @@ export function OfficialTranscriptModal({
                 </div>
 
                 <div className="pt-2 flex items-center gap-4">
-                  {/* Embossed simulated seal */}
-                  <div className="w-16 h-16 rounded-full border-2 border-indigo-900 flex flex-col items-center justify-center text-center p-1 text-indigo-900 select-none">
-                    <span className="text-[7px] font-black uppercase tracking-tight">University Seal</span>
-                    <span className="text-[9px] font-serif font-bold italic">VERITAS</span>
-                    <span className="text-[6px] uppercase font-bold">Registry Office</span>
-                  </div>
+                  {/* Embossed official vector seal */}
+                  <UniversitySeal size={74} />
 
                   <div>
                     <div className="font-serif italic font-bold text-sm text-slate-800 border-b border-slate-400 pb-1">

@@ -92,6 +92,81 @@ function DocumentQrCode({ value, size = 90 }: { value: string; size?: number }) 
   );
 }
 
+/**
+ * Authentic Vector Bursary Paid Stamp
+ * Rendered as pure SVG with mathematically bounded concentric rings and typography,
+ * guaranteeing zero text wrapping or circular boundary overflow across all PDF renderers.
+ */
+function BursarStamp({ size = 68 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      className="shrink-0 select-none"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle cx="50" cy="50" r="47" stroke="#047857" strokeWidth="2.5" />
+      <circle cx="50" cy="50" r="43.5" stroke="#047857" strokeWidth="0.8" strokeDasharray="1.5, 1.5" />
+      <circle cx="50" cy="50" r="32" stroke="#047857" strokeWidth="1" />
+
+      <text
+        x="50"
+        y="21"
+        textAnchor="middle"
+        fill="#047857"
+        fontSize="5.2"
+        fontWeight="800"
+        letterSpacing="0.8"
+        fontFamily="ui-sans-serif, system-ui, -apple-system, sans-serif"
+      >
+        BURSARY DIVISION
+      </text>
+
+      <rect x="25" y="38" width="50" height="17" rx="3" fill="#047857" fillOpacity="0.08" stroke="#047857" strokeWidth="1" />
+      <text
+        x="50"
+        y="50.5"
+        textAnchor="middle"
+        fill="#047857"
+        fontSize="11.5"
+        fontWeight="900"
+        letterSpacing="2"
+        fontFamily="ui-sans-serif, system-ui, -apple-system, sans-serif"
+      >
+        PAID
+      </text>
+
+      <text
+        x="50"
+        y="62"
+        textAnchor="middle"
+        fill="#047857"
+        fontSize="5.2"
+        fontWeight="800"
+        letterSpacing="0.6"
+        fontFamily="ui-sans-serif, system-ui, -apple-system, sans-serif"
+      >
+        FINANCE OFFICE
+      </text>
+
+      <text
+        x="50"
+        y="78"
+        textAnchor="middle"
+        fill="#047857"
+        fontSize="4.8"
+        fontWeight="700"
+        letterSpacing="1"
+        fontFamily="ui-sans-serif, system-ui, -apple-system, sans-serif"
+      >
+        ★ CASHIER STAMP ★
+      </text>
+    </svg>
+  );
+}
+
 export function FeeReceiptModal({
   isOpen,
   onClose,
@@ -216,16 +291,22 @@ export function FeeReceiptModal({
           >
             {/* Header */}
             <div className="border-b-2 border-slate-900 pb-4 mb-5 flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-black uppercase tracking-wider text-slate-900 font-serif">
-                  University of Advanced Studies
-                </h2>
-                <p className="text-xs uppercase tracking-widest text-slate-600 font-semibold">
-                  Finance Directorate • Bursary Cashier Office
-                </p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  Official Electronic Receipt & Confirmation of Payment
-                </p>
+              <div className="flex items-center gap-3.5">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-950 text-white flex flex-col items-center justify-center font-serif shadow-sm shrink-0 border border-indigo-800">
+                  <span className="text-xl font-black leading-none">U</span>
+                  <span className="text-[6px] uppercase font-sans tracking-widest text-indigo-300 mt-1 font-bold">BURSARY</span>
+                </div>
+                <div>
+                  <h2 className="text-lg font-black uppercase tracking-wider text-slate-900 font-serif">
+                    University of Advanced Studies
+                  </h2>
+                  <p className="text-xs uppercase tracking-widest text-slate-600 font-semibold">
+                    Finance Directorate • Bursary Cashier Office
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Official Electronic Receipt & Confirmation of Payment
+                  </p>
+                </div>
               </div>
 
               <div className="text-right shrink-0">
@@ -320,11 +401,7 @@ export function FeeReceiptModal({
             <div className="border-t border-slate-300 pt-4 flex items-end justify-between gap-4">
               <div>
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-full border border-emerald-700 flex flex-col items-center justify-center text-center text-emerald-800 p-0.5 select-none">
-                    <span className="text-[6px] font-black uppercase">BURSAR</span>
-                    <span className="text-[8px] font-bold">PAID</span>
-                    <span className="text-[5px] uppercase">Finance Office</span>
-                  </div>
+                  <BursarStamp size={64} />
                   <div>
                     <span className="font-serif italic font-bold text-xs text-slate-800 block">
                       University Bursary Office
