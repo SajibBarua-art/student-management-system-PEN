@@ -11,15 +11,60 @@ import { AuditTrailWorkflow } from "@/components/staff/AuditTrailWorkflow";
 import { StudentPortal } from "@/components/student/StudentPortal";
 
 export default function Home() {
-  const [role, setRole] = useState<"staff" | "student">("staff");
-  const [persona, setPersona] = useState<InstitutionalPersona>("REGISTRY_ADMIN");
-  const [activeStaffTab, setActiveStaffTab] = useState<string>("overview");
+  // Initialize state from URL search params on client
+  const [role, setRole] = useState<"staff" | "student">(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search);
+      return p.get("role") === "student" ? "student" : "staff";
+    }
+    return "staff";
+  });
+
+  const [persona, setPersona] = useState<InstitutionalPersona>(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search);
+      const personaParam = p.get("persona");
+      if (
+        personaParam &&
+        ["REGISTRY_ADMIN", "MODULE_LEADER", "BURSAR_FINANCE", "STUDENT"].includes(
+          personaParam
+        )
+      ) {
+        return personaParam as InstitutionalPersona;
+      }
+      if (p.get("role") === "student") return "STUDENT";
+    }
+    return "REGISTRY_ADMIN";
+  });
+
+  const [activeStaffTab, setActiveStaffTab] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search);
+      const tabParam = p.get("tab");
+      if (
+        tabParam &&
+        ["overview", "enrolment", "fees", "assessments", "marksheet", "audit"].includes(
+          tabParam
+        )
+      ) {
+        return tabParam;
+      }
+    }
+    return "overview";
+  });
+
+  const [activeStudentId, setActiveStudentId] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search);
+      return p.get("studentId") || null;
+    }
+    return null;
+  });
 
   // Global data states
   const [students, setStudents] = useState<any[]>([]);
   const [programmes, setProgrammes] = useState<any[]>([]);
   const [stats, setStats] = useState<any | null>(null);
-  const [activeStudentId, setActiveStudentId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Modal triggers from Overview or other workflows
@@ -27,6 +72,82 @@ export default function Home() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [preselectedPayStudentId, setPreselectedPayStudentId] = useState<string | null>(null);
   const [gradingAssessmentId, setGradingAssessmentId] = useState<string | null>(null);
+
+  // Synchronize browser URL bar and history without full page reload
+  const updateUrl = useCallback(
+    (
+      newRole: "staff" | "student",
+      newTab: string,
+      newPersona: InstitutionalPersona,
+      newStudentId: string | null
+    ) => {
+      if (typeof window === "undefined") return;
+      const params = new URLSearchParams();
+      if (newRole === "student") {
+        params.set("role", "student");
+        if (newStudentId) params.set("studentId", newStudentId);
+      } else {
+        if (newTab && newTab !== "overview") {
+          params.set("tab", newTab);
+        }
+        if (newPersona && newPersona !== "REGISTRY_ADMIN") {
+          params.set("persona", newPersona);
+        }
+      }
+      const qs = params.toString();
+      const targetUrl = qs ? `?${qs}` : window.location.pathname;
+      if (window.location.search !== (qs ? `?${qs}` : "")) {
+        window.history.pushState(null, "", targetUrl);
+      }
+    },
+    []
+  );
+
+  // Synchronize state when browser Back / Forward buttons are clicked
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const syncFromUrl = () => {
+      const p = new URLSearchParams(window.location.search);
+      const urlRole = p.get("role");
+      const urlTab = p.get("tab");
+      const urlPersona = p.get("persona");
+      const urlStudentId = p.get("studentId");
+
+      if (urlRole === "student") {
+        setRole("student");
+        setPersona("STUDENT");
+      } else {
+        setRole("staff");
+      }
+
+      if (
+        urlTab &&
+        ["overview", "enrolment", "fees", "assessments", "marksheet", "audit"].includes(
+          urlTab
+        )
+      ) {
+        setActiveStaffTab(urlTab);
+      } else if (!urlTab && urlRole !== "student") {
+        setActiveStaffTab("overview");
+      }
+
+      if (
+        urlPersona &&
+        ["REGISTRY_ADMIN", "MODULE_LEADER", "BURSAR_FINANCE", "STUDENT"].includes(
+          urlPersona
+        )
+      ) {
+        setPersona(urlPersona as InstitutionalPersona);
+      }
+
+      if (urlStudentId) {
+        setActiveStudentId(urlStudentId);
+      }
+    };
+
+    window.addEventListener("popstate", syncFromUrl);
+    return () => window.removeEventListener("popstate", syncFromUrl);
+  }, []);
 
   // Load all foundational data
   const fetchData = useCallback(async () => {
@@ -46,8 +167,18 @@ export default function Home() {
         setStudents(dataStudents.data);
         if (dataStudents.data.length > 0) {
           setActiveStudentId((prev) => {
-            const exists = dataStudents.data.some((s: any) => s.id === prev);
-            return exists ? prev : dataStudents.data[0].id;
+            const urlStudentId =
+              typeof window !== "undefined"
+                ? new URLSearchParams(window.location.search).get("studentId")
+                : null;
+            const targetId = prev || urlStudentId;
+            if (targetId) {
+              const matched = dataStudents.data.find(
+                (s: any) => s.id === targetId || s.studentId === targetId
+              );
+              if (matched) return matched.id;
+            }
+            return dataStudents.data[0].id;
           });
         }
       }
@@ -57,16 +188,29 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeStudentId]);
+  }, []);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
+  // Tab change handler
+  const handleStaffTabChange = (newTab: string) => {
+    setActiveStaffTab(newTab);
+    updateUrl(role, newTab, persona, activeStudentId);
+  };
+
+  // Student selection handler
+  const handleStudentChange = (newStudentId: string) => {
+    setActiveStudentId(newStudentId);
+    updateUrl(role, activeStaffTab, persona, newStudentId);
+  };
+
   // Navigate to Marksheet with selected assessment
   const handleNavigateToGrading = (assessmentId: string) => {
     setGradingAssessmentId(assessmentId);
     setActiveStaffTab("marksheet");
+    updateUrl(role, "marksheet", persona, activeStudentId);
   };
 
   // Open payment modal for specific student
@@ -77,39 +221,52 @@ export default function Home() {
       setPreselectedPayStudentId(null);
     }
     setActiveStaffTab("fees");
+    updateUrl(role, "fees", persona, activeStudentId);
     setIsPaymentModalOpen(true);
   };
 
   // Persona Change Handler (RBAC)
   const handlePersonaChange = (newPersona: InstitutionalPersona) => {
     setPersona(newPersona);
+    let nextRole: "staff" | "student" = role;
+    let nextTab = activeStaffTab;
+
     if (newPersona === "STUDENT") {
+      nextRole = "student";
       setRole("student");
     } else {
+      nextRole = "staff";
       setRole("staff");
       if (
         newPersona === "MODULE_LEADER" &&
         (activeStaffTab === "fees" || activeStaffTab === "enrolment")
       ) {
+        nextTab = "assessments";
         setActiveStaffTab("assessments");
       } else if (
         newPersona === "BURSAR_FINANCE" &&
         (activeStaffTab === "assessments" || activeStaffTab === "marksheet")
       ) {
+        nextTab = "fees";
         setActiveStaffTab("fees");
       }
     }
+    updateUrl(nextRole, nextTab, newPersona, activeStudentId);
   };
 
   const handleRoleChange = (newRole: "staff" | "student") => {
     setRole(newRole);
+    let nextPersona = persona;
     if (newRole === "student") {
+      nextPersona = "STUDENT";
       setPersona("STUDENT");
     } else {
       if (persona === "STUDENT") {
+        nextPersona = "REGISTRY_ADMIN";
         setPersona("REGISTRY_ADMIN");
       }
     }
+    updateUrl(newRole, activeStaffTab, nextPersona, activeStudentId);
   };
 
   return (
@@ -122,9 +279,9 @@ export default function Home() {
         onPersonaChange={handlePersonaChange}
         students={students}
         activeStudentId={activeStudentId}
-        onStudentChange={setActiveStudentId}
+        onStudentChange={handleStudentChange}
         activeStaffTab={activeStaffTab}
-        onStaffTabChange={setActiveStaffTab}
+        onStaffTabChange={handleStaffTabChange}
       />
 
       {/* Main Container */}
@@ -134,7 +291,7 @@ export default function Home() {
             {activeStaffTab === "overview" && (
               <OverviewDashboard
                 stats={stats}
-                onNavigateTab={setActiveStaffTab}
+                onNavigateTab={handleStaffTabChange}
                 onOpenEnrolModal={() => setIsEnrolModalOpen(true)}
                 onOpenPaymentModal={handleOpenPaymentModal}
               />

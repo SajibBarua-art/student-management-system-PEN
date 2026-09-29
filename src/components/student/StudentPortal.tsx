@@ -48,9 +48,41 @@ interface StudentPortalProps {
 export function StudentPortal({ studentId }: StudentPortalProps) {
   const [student, setStudent] = useState<any | null>(null);
   const [assessments, setAssessments] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<"finance" | "assessments" | "marksheet">("assessments");
+  const [activeTab, setActiveTab] = useState<"finance" | "assessments" | "marksheet">(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search);
+      const sub = p.get("subtab");
+      if (sub === "finance" || sub === "assessments" || sub === "marksheet") {
+        return sub;
+      }
+    }
+    return "assessments";
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [portalError, setPortalError] = useState<string | null>(null);
+
+  // Sync subtab state when browser history navigates
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const syncSubtab = () => {
+      const p = new URLSearchParams(window.location.search);
+      const sub = p.get("subtab");
+      if (sub === "finance" || sub === "assessments" || sub === "marksheet") {
+        setActiveTab(sub);
+      }
+    };
+    window.addEventListener("popstate", syncSubtab);
+    return () => window.removeEventListener("popstate", syncSubtab);
+  }, []);
+
+  const handleTabChange = (newTab: "finance" | "assessments" | "marksheet") => {
+    setActiveTab(newTab);
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search);
+      p.set("subtab", newTab);
+      window.history.pushState(null, "", `?${p.toString()}`);
+    }
+  };
 
   // Upload modal state
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -322,7 +354,7 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
         {/* Tab Navigation */}
         <div className="flex items-center gap-2 mt-6 pt-5 border-t border-slate-200/80 dark:border-white/[0.08] overflow-x-auto scrollbar-none">
           <button
-            onClick={() => setActiveTab("assessments")}
+            onClick={() => handleTabChange("assessments")}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               activeTab === "assessments"
                 ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/30"
@@ -334,7 +366,7 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
           </button>
 
           <button
-            onClick={() => setActiveTab("marksheet")}
+            onClick={() => handleTabChange("marksheet")}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               activeTab === "marksheet"
                 ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/30"
@@ -346,7 +378,7 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
           </button>
 
           <button
-            onClick={() => setActiveTab("finance")}
+            onClick={() => handleTabChange("finance")}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               activeTab === "finance"
                 ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/30"
