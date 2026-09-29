@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 import { Printer, X, ShieldCheck, Building2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/formatters";
+import { printDocument } from "@/lib/print-document";
 
 interface FeeReceiptModalProps {
   isOpen: boolean;
@@ -105,15 +106,56 @@ export function FeeReceiptModal({
   const verificationUrl = `https://finance.university.ac.uk/verify?receipt=${receiptSerial}&ref=${payment.reference}`;
 
   const handlePrint = () => {
-    window.print();
+    printDocument(
+      "official-receipt-document",
+      `Payment_Receipt_${payment.reference || payment.id}`
+    );
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-950/70 backdrop-blur-sm">
+    <div className="receipt-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-950/70 backdrop-blur-sm">
       <style jsx global>{`
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 12mm 15mm;
+          }
+          *, *::before, *::after {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          body {
+            background: #ffffff !important;
+            color: #0f172a !important;
+          }
           body * {
-            visibility: hidden !important;
+            visibility: hidden;
+          }
+          .receipt-modal-overlay {
+            position: static !important;
+            display: block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+          }
+          .receipt-modal-card {
+            position: static !important;
+            display: block !important;
+            max-width: 100% !important;
+            max-height: none !important;
+            height: auto !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            overflow: visible !important;
+            background: #ffffff !important;
+          }
+          .receipt-modal-scroll {
+            overflow: visible !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
           #official-receipt-document,
           #official-receipt-document * {
@@ -125,8 +167,8 @@ export function FeeReceiptModal({
             top: 0 !important;
             width: 100% !important;
             margin: 0 !important;
-            padding: 24px !important;
-            background: white !important;
+            padding: 0 !important;
+            background: #ffffff !important;
             color: #0f172a !important;
             box-shadow: none !important;
             border: none !important;
@@ -137,7 +179,7 @@ export function FeeReceiptModal({
         }
       `}</style>
 
-      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="receipt-modal-card relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Top Bar (Hidden on print) */}
         <div className="no-print flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950/50">
           <div className="flex items-center gap-2">
@@ -166,7 +208,7 @@ export function FeeReceiptModal({
         </div>
 
         {/* Scrollable Container */}
-        <div className="overflow-y-auto p-4 sm:p-6 space-y-4">
+        <div className="receipt-modal-scroll overflow-y-auto p-4 sm:p-6 space-y-4">
           <div
             id="official-receipt-document"
             ref={printRef}

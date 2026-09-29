@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatDateTime } from "@/lib/formatters";
+import { printDocument } from "@/lib/print-document";
 
 interface OfficialTranscriptModalProps {
   isOpen: boolean;
@@ -131,15 +132,56 @@ export function OfficialTranscriptModal({
   const verificationUrl = `https://registry.university.ac.uk/verify?serial=${transcriptSerial}&id=${student.studentId}`;
 
   const handlePrint = () => {
-    window.print();
+    printDocument(
+      "official-transcript-document",
+      `Official_Transcript_${student.studentId}_${(student.fullName || "Student").replace(/\s+/g, "_")}`
+    );
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-950/70 backdrop-blur-sm">
+    <div className="transcript-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-950/70 backdrop-blur-sm">
       <style jsx global>{`
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 12mm 15mm;
+          }
+          *, *::before, *::after {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          body {
+            background: #ffffff !important;
+            color: #0f172a !important;
+          }
           body * {
-            visibility: hidden !important;
+            visibility: hidden;
+          }
+          .transcript-modal-overlay {
+            position: static !important;
+            display: block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+          }
+          .transcript-modal-card {
+            position: static !important;
+            display: block !important;
+            max-width: 100% !important;
+            max-height: none !important;
+            height: auto !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            overflow: visible !important;
+            background: #ffffff !important;
+          }
+          .transcript-modal-scroll {
+            overflow: visible !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
           #official-transcript-document,
           #official-transcript-document * {
@@ -151,8 +193,8 @@ export function OfficialTranscriptModal({
             top: 0 !important;
             width: 100% !important;
             margin: 0 !important;
-            padding: 24px !important;
-            background: white !important;
+            padding: 0 !important;
+            background: #ffffff !important;
             color: #0f172a !important;
             box-shadow: none !important;
             border: none !important;
@@ -163,7 +205,7 @@ export function OfficialTranscriptModal({
         }
       `}</style>
 
-      <div className="relative w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="transcript-modal-card relative w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Top Bar (Hidden on print) */}
         <div className="no-print flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950/50">
           <div className="flex items-center gap-2">
@@ -192,7 +234,7 @@ export function OfficialTranscriptModal({
         </div>
 
         {/* Scrollable Container */}
-        <div className="overflow-y-auto p-4 sm:p-8 space-y-6">
+        <div className="transcript-modal-scroll overflow-y-auto p-4 sm:p-8 space-y-6">
           {/* Printable Document Paper */}
           <div
             id="official-transcript-document"
