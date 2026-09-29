@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { logAuditEvent } from "@/lib/audit-logger";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,12 +11,27 @@ export async function POST(req: NextRequest) {
 
     // Batch publish/withhold all grades for an assessment
     if (publishAll && assessmentId) {
+      const assessment = await prisma.assessment.findUnique({
+        where: { id: assessmentId },
+      });
+
       const updatedBatch = await prisma.grade.updateMany({
         where: { assessmentId },
         data: {
           isPublished: Boolean(isPublished),
           publishedAt: isPublished ? now : null,
         },
+      });
+
+      await logAuditEvent({
+        action: isPublished ? "BOARD_PUBLISHED_RESULTS" : "BOARD_WITHHELD_RESULTS",
+        actor: "Examination Board & Registry",
+        role: "EXAM_BOARD",
+        entityType: "ASSESSMENT",
+        entityId: assessmentId,
+        details: `Examination Board formally ${
+          isPublished ? "ratified and published" : "withheld"
+        } marksheet results for ${assessment?.moduleCode}: ${assessment?.title} (${updatedBatch.count} student grades affected).`,
       });
 
       return NextResponse.json({
@@ -45,6 +61,17 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    await logAuditEvent({
+      action: isPublished ? "GRADE_PUBLISHED" : "GRADE_WITHHELD",
+      actor: "Academic Registry Officer",
+      role: "REGISTRY_OFFICER",
+      entityType: "GRADE",
+      entityId: updatedGrade.id,
+      details: `${
+        isPublished ? "Published" : "Withheld"
+      } result for ${updatedGrade.student.fullName} (${updatedGrade.student.studentId}) on ${updatedGrade.assessment.moduleCode} (${updatedGrade.numericGrade}% - ${updatedGrade.classification}).`,
+    });
+
     return NextResponse.json({
       success: true,
       data: updatedGrade,
@@ -60,3 +87,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

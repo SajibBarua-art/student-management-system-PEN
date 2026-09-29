@@ -448,7 +448,54 @@ async function main() {
     },
   });
 
-  console.log("✅ Seeded 6 students with full fees, payments, submissions & grades.");
+  // 6. Seed Realistic Audit Trail Events
+  await prisma.auditLog.deleteMany();
+  await prisma.auditLog.createMany({
+    data: [
+      {
+        action: "BOARD_PUBLISHED_RESULTS",
+        actor: "Academic Examination Board",
+        role: "EXAM_BOARD",
+        entityType: "ASSESSMENT",
+        details: "Examination Board ratified and published modular marksheet for CS101: Programming & Data Structures across all candidate cohorts.",
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      },
+      {
+        action: "EC_CLAIM_APPROVED",
+        actor: "Dr. Alistair Finch (Chair, EC Panel)",
+        role: "EXAM_BOARD",
+        entityType: "EXTENUATING_CIRCUMSTANCE",
+        details: "Approved acute medical extenuating circumstance claim for Marcus Vance (STU-2024-002). Standard 5%/day late submission penalty waived.",
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      },
+      {
+        action: "SCHOLARSHIP_AWARDED",
+        actor: "Bursary Directorate",
+        role: "FINANCE_OFFICER",
+        entityType: "FEE",
+        details: "Awarded Dean's Academic Merit Scholarship of £2,000.00 directly credited to candidate ledger for Elena Rostova (STU-2024-001).",
+        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      },
+      {
+        action: "GRADE_RECORDED",
+        actor: "Prof. Arthur Pendelton",
+        role: "LECTURER",
+        entityType: "GRADE",
+        details: "Awarded 88.0% (DISTINCTION) on Advanced Deep Learning Architectures for Elena Rostova.",
+        createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+      },
+      {
+        action: "INSTALMENT_PLAN_GENERATED",
+        actor: "Student Finance Office",
+        role: "FINANCE_OFFICER",
+        entityType: "FEE",
+        details: "Configured 3-tranche term billing plan (40% / 30% / 30%) with individual due dates for Tariq Al-Mansoor (STU-2024-004).",
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      },
+    ],
+  });
+
+  console.log("✅ Seeded 6 students with full fees, payments, submissions, grades & audit trail.");
   console.log("🎉 Seeding complete successfully!");
 }
 

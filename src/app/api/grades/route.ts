@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getGradeClassification } from "@/lib/grade-classification";
+import { logAuditEvent } from "@/lib/audit-logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -111,6 +112,15 @@ export async function POST(req: NextRequest) {
         assessment: true,
         student: true,
       },
+    });
+
+    await logAuditEvent({
+      action: "GRADE_RECORDED",
+      actor: "Module Leader / Lecturer",
+      role: "LECTURER",
+      entityType: "GRADE",
+      entityId: grade.id,
+      details: `Awarded mark of ${score}% (${classification}) to student ${grade.student.fullName} (${grade.student.studentId}) for ${grade.assessment.moduleCode}: ${grade.assessment.title}.`,
     });
 
     return NextResponse.json({ success: true, data: grade }, { status: 200 });

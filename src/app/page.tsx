@@ -7,6 +7,7 @@ import { EnrolmentWorkflow } from "@/components/staff/EnrolmentWorkflow";
 import { FeesPaymentsWorkflow } from "@/components/staff/FeesPaymentsWorkflow";
 import { AssessmentsWorkflow } from "@/components/staff/AssessmentsWorkflow";
 import { MarksheetWorkflow } from "@/components/staff/MarksheetWorkflow";
+import { AuditTrailWorkflow } from "@/components/staff/AuditTrailWorkflow";
 import { StudentPortal } from "@/components/student/StudentPortal";
 
 export default function Home() {
@@ -136,6 +137,8 @@ export default function Home() {
                 onRefreshGlobalStats={fetchData}
               />
             )}
+
+            {activeStaffTab === "audit" && <AuditTrailWorkflow />}
           </div>
         ) : (
           <div>

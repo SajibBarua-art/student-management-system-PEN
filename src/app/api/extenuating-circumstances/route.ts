@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { logAuditEvent } from "@/lib/audit-logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -124,6 +125,15 @@ export async function PATCH(req: NextRequest) {
         student: true,
         assessment: true,
       },
+    });
+
+    await logAuditEvent({
+      action: status === "APPROVED" ? "EC_CLAIM_APPROVED" : "EC_CLAIM_REJECTED",
+      actor: reviewedBy || "Registry Examination Board",
+      role: "EXAM_BOARD",
+      entityType: "EXTENUATING_CIRCUMSTANCE",
+      entityId: updated.id,
+      details: `Extenuating circumstances claim ${status} for ${updated.student.fullName} (${updated.student.studentId}) on ${updated.assessment.moduleCode}: ${updated.assessment.title} (Grounds: ${updated.reason}). ${status === "APPROVED" ? "Late penalty formally waived." : "Penalty remains in effect."}`,
     });
 
     return NextResponse.json({

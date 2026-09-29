@@ -200,3 +200,19 @@ model ExtenuatingCircumstance {
   @@index([status])
 }
 
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String   // e.g. GRADE_MODIFIED, MARKSHEET_PUBLISHED, STATUS_OVERRIDDEN
+  actor      String   @default("Academic Registry")
+  role       String   @default("REGISTRY_OFFICER")
+  entityType String   // e.g. GRADE, ASSESSMENT, STUDENT, FEE, EXTENUATING_CIRCUMSTANCE
+  entityId   String?
+  details    String
+  ipAddress  String?  @default("127.0.0.1 (Internal Registry)")
+  createdAt  DateTime @default(now())
+
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
+

@@ -49,6 +49,7 @@ export function Navbar({
     { id: "fees", label: "Fees & Ledger", icon: Receipt },
     { id: "assessments", label: "Assessments", icon: FileCheck2 },
     { id: "marksheet", label: "Marksheet & Results", icon: Award },
+    { id: "audit", label: "Registry Audit Trail", icon: ShieldCheck },
   ];
 
   const currentStudent = students.find((s) => s.id === activeStudentId);
