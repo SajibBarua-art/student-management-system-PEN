@@ -217,6 +217,10 @@ export async function getStudentsFull() {
 
       return {
         ...s,
+        totalFees,
+        totalPaid,
+        balance,
+        isOverdue,
         financialSummary: {
           totalFees,
           totalPaid,

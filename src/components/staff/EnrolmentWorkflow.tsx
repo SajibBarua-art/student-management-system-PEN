@@ -336,12 +336,12 @@ export function EnrolmentWorkflow({
                         <div className="flex items-center gap-2">
                           <span
                             className={`font-bold ${
-                              student.balance > 0
+                              (student.balance ?? student.financialSummary?.balance ?? 0) > 0
                                 ? "text-slate-900 dark:text-slate-200"
                                 : "text-emerald-600 dark:text-emerald-400"
                             }`}
                           >
-                            {formatCurrency(student.balance)}
+                            {formatCurrency(student.balance ?? student.financialSummary?.balance)}
                           </span>
                           {student.isOverdue && (
                             <Badge variant="danger" dot className="text-[10px] py-0 px-2">
@@ -660,10 +660,10 @@ export function EnrolmentWorkflow({
                 <span className="text-slate-500 dark:text-slate-400 block mb-0.5">Fee Balance</span>
                 <span
                   className={`font-bold ${
-                    selectedStudent.balance > 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
+                    (selectedStudent.balance ?? selectedStudent.financialSummary?.balance ?? 0) > 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
                   }`}
                 >
-                  {formatCurrency(selectedStudent.balance)}
+                  {formatCurrency(selectedStudent.balance ?? selectedStudent.financialSummary?.balance)}
                 </span>
               </div>
             </div>

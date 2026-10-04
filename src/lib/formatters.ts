@@ -1,12 +1,13 @@
 import { EnrolmentStatus } from "@/generated/prisma/client";
 
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number | string | null | undefined): string {
+  const num = typeof amount === "number" && !isNaN(amount) ? amount : Number(amount) || 0;
   return new Intl.NumberFormat("en-GB", {
     style: "currency",
     currency: "GBP",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(num);
 }
 
 export function formatDate(date: string | Date | null | undefined): string {

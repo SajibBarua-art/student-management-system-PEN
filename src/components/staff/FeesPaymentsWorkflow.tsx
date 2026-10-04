@@ -256,8 +256,14 @@ export function FeesPaymentsWorkflow({
     }
   };
 
-  const totalAssignedAll = students.reduce((sum, s) => sum + s.totalFees, 0);
-  const totalPaidAll = students.reduce((sum, s) => sum + s.totalPaid, 0);
+  const totalAssignedAll = students.reduce(
+    (sum, s) => sum + (Number(s.totalFees ?? s.financialSummary?.totalFees) || 0),
+    0
+  );
+  const totalPaidAll = students.reduce(
+    (sum, s) => sum + (Number(s.totalPaid ?? s.financialSummary?.totalPaid) || 0),
+    0
+  );
   const totalOutstandingAll = Math.max(0, totalAssignedAll - totalPaidAll);
   const overdueStudentsCount = students.filter((s) => s.isOverdue).length;
 
