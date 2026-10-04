@@ -4,6 +4,7 @@ import {
   getStudentsFull,
   getProgrammesFull,
   getAuditLogs,
+  getAssessmentsFull,
 } from "@/lib/server-data";
 import { AppClientShell } from "@/components/AppClientShell";
 import { InstitutionalPersona } from "@/components/layout/Navbar";
@@ -43,6 +44,7 @@ export default async function Page({ searchParams }: PageProps) {
   let students: any[] = [];
   let programmes: any[] = [];
   let auditLogs: any[] = [];
+  let assessments: any[] = [];
 
   if (role === "staff") {
     if (tab === "overview") {
@@ -57,7 +59,12 @@ export default async function Page({ searchParams }: PageProps) {
       students = studentsData;
       programmes = programmesData;
     } else if (tab === "assessments") {
-      programmes = await getProgrammesFull();
+      const [programmesData, assessmentsData] = await Promise.all([
+        getProgrammesFull(),
+        getAssessmentsFull(),
+      ]);
+      programmes = programmesData;
+      assessments = assessmentsData;
     }
   }
 
@@ -72,6 +79,7 @@ export default async function Page({ searchParams }: PageProps) {
       initialStudents={students}
       initialProgrammes={programmes}
       initialAuditLogs={auditLogs}
+      initialAssessments={assessments}
     />
   );
 }

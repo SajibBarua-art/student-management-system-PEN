@@ -22,6 +22,7 @@ interface AppClientShellProps {
   initialStudents?: any[];
   initialProgrammes?: any[];
   initialAuditLogs?: any[];
+  initialAssessments?: any[];
 }
 
 export function AppClientShell({
@@ -34,6 +35,7 @@ export function AppClientShell({
   initialStudents = [],
   initialProgrammes = [],
   initialAuditLogs = [],
+  initialAssessments = [],
 }: AppClientShellProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -268,6 +270,7 @@ export function AppClientShell({
               <AssessmentsWorkflow
                 programmes={programmes}
                 onNavigateToGrading={handleNavigateToGrading}
+                initialAssessments={initialAssessments}
               />
             )}
 

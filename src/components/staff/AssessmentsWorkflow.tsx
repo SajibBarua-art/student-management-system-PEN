@@ -27,14 +27,16 @@ import { formatDate, formatDateTime, isPastDate } from "@/lib/formatters";
 interface AssessmentsWorkflowProps {
   programmes: any[];
   onNavigateToGrading: (assessmentId: string) => void;
+  initialAssessments?: any[];
 }
 
 export function AssessmentsWorkflow({
   programmes,
   onNavigateToGrading,
+  initialAssessments,
 }: AssessmentsWorkflowProps) {
-  const [assessments, setAssessments] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [assessments, setAssessments] = useState<any[]>(initialAssessments || []);
+  const [isLoading, setIsLoading] = useState(!initialAssessments || initialAssessments.length === 0);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedAssessmentForSubmissions, setSelectedAssessmentForSubmissions] =
     useState<any | null>(null);
@@ -110,8 +112,13 @@ export function AssessmentsWorkflow({
   };
 
   useEffect(() => {
-    fetchAssessments();
-  }, []);
+    if (initialAssessments && initialAssessments.length > 0) {
+      setAssessments(initialAssessments);
+      setIsLoading(false);
+    } else {
+      fetchAssessments();
+    }
+  }, [initialAssessments]);
 
   const handleCreateAssessment = async (e: React.FormEvent) => {
     e.preventDefault();

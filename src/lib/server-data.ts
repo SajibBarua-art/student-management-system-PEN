@@ -272,3 +272,78 @@ export async function getAuditLogs(limit = 150) {
     return [];
   }
 }
+
+/**
+ * Server-side fetch of Assessments with formatted stats
+ */
+export async function getAssessmentsFull() {
+  try {
+    const assessments = await prisma.assessment.findMany({
+      orderBy: { deadline: "asc" },
+      include: {
+        programme: {
+          select: { id: true, code: true, name: true },
+        },
+        submissions: {
+          include: {
+            student: {
+              select: {
+                id: true,
+                studentId: true,
+                fullName: true,
+                email: true,
+              },
+            },
+          },
+          orderBy: { submittedAt: "desc" },
+        },
+        grades: {
+          include: {
+            student: {
+              select: {
+                id: true,
+                studentId: true,
+                fullName: true,
+              },
+            },
+          },
+        },
+        extenuatingCircumstances: {
+          include: {
+            student: {
+              select: {
+                id: true,
+                studentId: true,
+                fullName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const now = new Date();
+
+    return assessments.map((asm) => {
+      const isDeadlinePassed = new Date(asm.deadline) < now;
+      const totalSubmissions = asm.submissions.length;
+      const lateSubmissions = asm.submissions.filter((s) => s.isLate).length;
+      const gradedCount = asm.grades.length;
+      const publishedCount = asm.grades.filter((g) => g.isPublished).length;
+
+      return {
+        ...asm,
+        isDeadlinePassed,
+        stats: {
+          totalSubmissions,
+          lateSubmissions,
+          gradedCount,
+          publishedCount,
+        },
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching assessments on server:", error);
+    return [];
+  }
+}
