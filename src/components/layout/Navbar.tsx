@@ -14,12 +14,13 @@ import {
   Award,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { USER_ROLES } from "@/constants";
 
 export type InstitutionalPersona =
-  | "REGISTRY_ADMIN"
-  | "MODULE_LEADER"
-  | "BURSAR_FINANCE"
-  | "STUDENT";
+  | typeof USER_ROLES.REGISTRY_ADMIN
+  | typeof USER_ROLES.MODULE_LEADER
+  | typeof USER_ROLES.BURSAR_FINANCE
+  | typeof USER_ROLES.STUDENT;
 
 interface StudentPersona {
   id: string;
@@ -58,55 +59,55 @@ export function Navbar({
       id: "overview",
       label: "Executive Dashboard",
       icon: Layers,
-      allowed: ["REGISTRY_ADMIN", "MODULE_LEADER", "BURSAR_FINANCE"],
+      allowed: [USER_ROLES.REGISTRY_ADMIN, USER_ROLES.MODULE_LEADER, USER_ROLES.BURSAR_FINANCE],
     },
     {
       id: "enrolment",
       label: "Student Enrolment",
       icon: Users2,
-      allowed: ["REGISTRY_ADMIN", "BURSAR_FINANCE"],
+      allowed: [USER_ROLES.REGISTRY_ADMIN, USER_ROLES.BURSAR_FINANCE],
     },
     {
       id: "fees",
       label: "Fees & Ledger",
       icon: Receipt,
-      allowed: ["REGISTRY_ADMIN", "BURSAR_FINANCE"],
+      allowed: [USER_ROLES.REGISTRY_ADMIN, USER_ROLES.BURSAR_FINANCE],
     },
     {
       id: "assessments",
       label: "Assessments",
       icon: FileCheck2,
-      allowed: ["REGISTRY_ADMIN", "MODULE_LEADER"],
+      allowed: [USER_ROLES.REGISTRY_ADMIN, USER_ROLES.MODULE_LEADER],
     },
     {
       id: "marksheet",
       label: "Marksheet & Results",
       icon: Award,
-      allowed: ["REGISTRY_ADMIN", "MODULE_LEADER"],
+      allowed: [USER_ROLES.REGISTRY_ADMIN, USER_ROLES.MODULE_LEADER],
     },
     {
       id: "audit",
       label: "Registry Audit Trail",
       icon: ShieldCheck,
-      allowed: ["REGISTRY_ADMIN", "MODULE_LEADER", "BURSAR_FINANCE"],
+      allowed: [USER_ROLES.REGISTRY_ADMIN, USER_ROLES.MODULE_LEADER, USER_ROLES.BURSAR_FINANCE],
     },
   ];
 
   const visibleStaffTabs = allStaffTabs.filter((tab) =>
-    tab.allowed.includes(persona)
+    (tab.allowed as readonly string[]).includes(persona)
   );
 
   const currentStudent = students.find((s) => s.id === activeStudentId);
 
   const getRoleBadge = () => {
     switch (persona) {
-      case "REGISTRY_ADMIN":
+      case USER_ROLES.REGISTRY_ADMIN:
         return "LEVEL 4 • REGISTRY GOVERNANCE";
-      case "MODULE_LEADER":
+      case USER_ROLES.MODULE_LEADER:
         return "FACULTY • ACADEMIC ASSESSOR";
-      case "BURSAR_FINANCE":
+      case USER_ROLES.BURSAR_FINANCE:
         return "BURSARY • FINANCE DIRECTORATE";
-      case "STUDENT":
+      case USER_ROLES.STUDENT:
         return "ENROLLED CANDIDATE";
     }
   };
@@ -173,25 +174,25 @@ export function Navbar({
                     className="bg-transparent text-xs font-extrabold text-slate-800 dark:text-white focus:outline-none cursor-pointer pr-4 appearance-none"
                   >
                     <option
-                      value="REGISTRY_ADMIN"
+                      value={USER_ROLES.REGISTRY_ADMIN}
                       className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white"
                     >
                       Registry Admin (Dr. Pendelton)
                     </option>
                     <option
-                      value="MODULE_LEADER"
+                      value={USER_ROLES.MODULE_LEADER}
                       className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white"
                     >
                       Module Leader (Dr. Jenkins)
                     </option>
                     <option
-                      value="BURSAR_FINANCE"
+                      value={USER_ROLES.BURSAR_FINANCE}
                       className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white"
                     >
                       Bursar / Finance (D. Sterling)
                     </option>
                     <option
-                      value="STUDENT"
+                      value={USER_ROLES.STUDENT}
                       className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white"
                     >
                       Student Candidate Portal

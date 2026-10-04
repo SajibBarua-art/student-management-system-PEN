@@ -22,6 +22,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDateTime } from "@/lib/formatters";
 import { Pagination } from "@/components/ui/pagination";
+import {
+  API_ROUTES,
+  AUDIT_ACTIONS,
+  AUDIT_ACTION_FILTERS,
+  AUDIT_PILLS,
+  FILTER_ALL_UPPER,
+  PAGINATION,
+} from "@/constants";
 
 interface AuditTrailWorkflowProps {
   initialLogs?: any[];
@@ -31,13 +39,13 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
   const [logs, setLogs] = useState<any[]>(initialLogs || []);
   const [isLoading, setIsLoading] = useState(initialLogs === undefined);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedActionFilter, setSelectedActionFilter] = useState("ALL");
-  const [selectedRoleFilter, setSelectedRoleFilter] = useState("ALL");
+  const [selectedActionFilter, setSelectedActionFilter] = useState<string>(AUDIT_ACTION_FILTERS.ALL);
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>(FILTER_ALL_UPPER);
 
   const fetchLogs = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/audit-logs?limit=150");
+      const res = await fetch(`${API_ROUTES.AUDIT_LOGS}?limit=150`);
       const data = await res.json();
       if (data.success) {
         setLogs(data.data);
@@ -60,24 +68,24 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
 
   const getActionBadge = (action: string) => {
     switch (action) {
-      case "GRADE_RECORDED":
-      case "GRADE_MODIFIED":
+      case AUDIT_ACTIONS.GRADE_RECORDED:
+      case AUDIT_ACTIONS.GRADE_MODIFIED:
         return <Badge variant="info">GRADE UPDATE</Badge>;
-      case "BOARD_PUBLISHED_RESULTS":
+      case AUDIT_ACTIONS.BOARD_PUBLISHED_RESULTS:
         return <Badge variant="purple" dot>BOARD RATIFIED</Badge>;
-      case "BOARD_WITHHELD_RESULTS":
+      case AUDIT_ACTIONS.BOARD_WITHHELD_RESULTS:
         return <Badge variant="warning" dot>BOARD WITHHELD</Badge>;
-      case "GRADE_PUBLISHED":
+      case AUDIT_ACTIONS.GRADE_PUBLISHED:
         return <Badge variant="success">PUBLISHED</Badge>;
-      case "GRADE_WITHHELD":
+      case AUDIT_ACTIONS.GRADE_WITHHELD:
         return <Badge variant="secondary">WITHHELD</Badge>;
-      case "EC_CLAIM_APPROVED":
+      case AUDIT_ACTIONS.EC_CLAIM_APPROVED:
         return <Badge variant="success" dot>EC APPROVED</Badge>;
-      case "EC_CLAIM_REJECTED":
+      case AUDIT_ACTIONS.EC_CLAIM_REJECTED:
         return <Badge variant="danger" dot>EC REJECTED</Badge>;
-      case "SCHOLARSHIP_AWARDED":
+      case AUDIT_ACTIONS.SCHOLARSHIP_AWARDED:
         return <Badge variant="purple">SCHOLARSHIP</Badge>;
-      case "INSTALMENT_PLAN_GENERATED":
+      case AUDIT_ACTIONS.INSTALMENT_PLAN_GENERATED:
         return <Badge variant="info">INSTALMENTS</Badge>;
       default:
         return <Badge variant="outline">{action}</Badge>;
@@ -93,23 +101,23 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
       (log.role && log.role.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesAction =
-      selectedActionFilter === "ALL" ||
-      (selectedActionFilter === "GRADES" &&
+      selectedActionFilter === AUDIT_ACTION_FILTERS.ALL ||
+      (selectedActionFilter === AUDIT_ACTION_FILTERS.GRADES &&
         (log.action.includes("GRADE") || log.action.includes("BOARD"))) ||
-      (selectedActionFilter === "EC" && log.action.includes("EC")) ||
-      (selectedActionFilter === "FINANCE" &&
+      (selectedActionFilter === AUDIT_ACTION_FILTERS.EC && log.action.includes("EC")) ||
+      (selectedActionFilter === AUDIT_ACTION_FILTERS.FINANCE &&
         (log.action.includes("FEE") ||
           log.action.includes("SCHOLARSHIP") ||
           log.action.includes("INSTALMENT")));
 
     const matchesRole =
-      selectedRoleFilter === "ALL" || log.role === selectedRoleFilter;
+      selectedRoleFilter === FILTER_ALL_UPPER || log.role === selectedRoleFilter;
 
     return matchesSearch && matchesAction && matchesRole;
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState<number>(PAGINATION.AUDIT_PAGE_SIZE);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -218,46 +226,20 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Action Filter */}
             <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs">
-              <button
-                type="button"
-                onClick={() => setSelectedActionFilter("ALL")}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${selectedActionFilter === "ALL"
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              {AUDIT_PILLS.map((pill) => (
+                <button
+                  key={pill.key}
+                  type="button"
+                  onClick={() => setSelectedActionFilter(pill.key)}
+                  className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${
+                    selectedActionFilter === pill.key
+                      ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
                   }`}
-              >
-                All Events
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedActionFilter("GRADES")}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${selectedActionFilter === "GRADES"
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                  }`}
-              >
-                Grading & Board
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedActionFilter("EC")}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${selectedActionFilter === "EC"
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                  }`}
-              >
-                EC Claims
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedActionFilter("FINANCE")}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${selectedActionFilter === "FINANCE"
-                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                  }`}
-              >
-                Finance
-              </button>
+                >
+                  {pill.label}
+                </button>
+              ))}
             </div>
 
             {/* Role Filter */}
@@ -269,7 +251,7 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
                 onChange={(e) => setSelectedRoleFilter(e.target.value)}
                 className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
               >
-                <option value="ALL">All Roles</option>
+                <option value={FILTER_ALL_UPPER}>All Roles</option>
                 {Array.from(new Set<string>(logs.map((l) => l.role).filter(Boolean))).map((role: string) => (
                   <option key={role} value={role}>{role}</option>
                 ))}
@@ -360,7 +342,7 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
           pageSize={pageSize}
           onPageChange={setCurrentPage}
           onPageSizeChange={setPageSize}
-          pageSizeOptions={[15, 30, 50]}
+          pageSizeOptions={PAGINATION.OPTIONS.DEFAULT}
           itemLabel="events"
         />
       </Card>

@@ -29,6 +29,16 @@ import { formatCurrency, formatDate, formatDateTime } from "@/lib/formatters";
 import { generateTransactionReference } from "@/lib/transaction-ref";
 import { FeeReceiptModal } from "@/components/documents/FeeReceiptModal";
 import { Pagination } from "@/components/ui/pagination";
+import {
+  ACCOUNT_BALANCE_FILTERS,
+  ACCOUNT_BALANCE_FILTER_OPTIONS,
+  API_ROUTES,
+  DEFAULT_PAYMENT_METHOD,
+  FEE_TYPES,
+  FILTER_ALL,
+  PAGINATION,
+  PAYMENT_METHODS,
+} from "@/constants";
 
 interface FeesPaymentsWorkflowProps {
   students: any[];
@@ -63,7 +73,7 @@ export function FeesPaymentsWorkflow({
     new Date().toISOString().split("T")[0]
   );
   const [payRef, setPayRef] = useState<string>("");
-  const [payMethod, setPayMethod] = useState<string>("Bank Transfer");
+  const [payMethod, setPayMethod] = useState<string>(DEFAULT_PAYMENT_METHOD);
   const [payNotes, setPayNotes] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -161,7 +171,7 @@ export function FeesPaymentsWorkflow({
     setPaymentError(null);
 
     try {
-      const res = await fetch("/api/payments", {
+      const res = await fetch(API_ROUTES.PAYMENTS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -194,7 +204,7 @@ export function FeesPaymentsWorkflow({
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/fees", {
+      const res = await fetch(API_ROUTES.FEES, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -219,7 +229,7 @@ export function FeesPaymentsWorkflow({
   const handleGenerateInstalments = async (studentId: string) => {
     setIsGeneratingInstalments(true);
     try {
-      const res = await fetch("/api/fees/instalments", {
+      const res = await fetch(API_ROUTES.FEES_INSTALMENTS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId }),
@@ -241,7 +251,7 @@ export function FeesPaymentsWorkflow({
     e.preventDefault();
     setIsAwardingScholarship(true);
     try {
-      const res = await fetch("/api/fees/scholarship", {
+      const res = await fetch(API_ROUTES.FEES_SCHOLARSHIP, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -279,8 +289,8 @@ export function FeesPaymentsWorkflow({
   const currentPayingStudent = students.find((s) => s.id === selectedStudentForPay);
 
   // Table 1: Student Accounts Filters & Search
-  const [accountBalanceFilter, setAccountBalanceFilter] = useState("all");
-  const [accountProgrammeFilter, setAccountProgrammeFilter] = useState("all");
+  const [accountBalanceFilter, setAccountBalanceFilter] = useState<string>(ACCOUNT_BALANCE_FILTERS.ALL);
+  const [accountProgrammeFilter, setAccountProgrammeFilter] = useState<string>(FILTER_ALL);
 
   const filteredStudents = students.filter((s) => {
     const matchesSearch =
@@ -290,13 +300,13 @@ export function FeesPaymentsWorkflow({
 
     const balance = Number(s.balance ?? s.financialSummary?.balance ?? 0);
     const matchesBalance =
-      accountBalanceFilter === "all" ||
-      (accountBalanceFilter === "overdue" && s.isOverdue) ||
-      (accountBalanceFilter === "outstanding" && balance > 0) ||
-      (accountBalanceFilter === "settled" && balance <= 0);
+      accountBalanceFilter === ACCOUNT_BALANCE_FILTERS.ALL ||
+      (accountBalanceFilter === ACCOUNT_BALANCE_FILTERS.OVERDUE && s.isOverdue) ||
+      (accountBalanceFilter === ACCOUNT_BALANCE_FILTERS.OUTSTANDING && balance > 0) ||
+      (accountBalanceFilter === ACCOUNT_BALANCE_FILTERS.SETTLED && balance <= 0);
 
     const matchesProgramme =
-      accountProgrammeFilter === "all" ||
+      accountProgrammeFilter === FILTER_ALL ||
       s.programmeId === accountProgrammeFilter ||
       s.programme?.code === accountProgrammeFilter;
 
@@ -304,7 +314,7 @@ export function FeesPaymentsWorkflow({
   });
 
   const [studentsCurrentPage, setStudentsCurrentPage] = useState(1);
-  const [studentsPageSize, setStudentsPageSize] = useState(10);
+  const [studentsPageSize, setStudentsPageSize] = useState<number>(PAGINATION.DEFAULT_PAGE_SIZE);
 
   useEffect(() => {
     setStudentsCurrentPage(1);
@@ -317,7 +327,7 @@ export function FeesPaymentsWorkflow({
 
   // Table 2: Transactions Ledger Filters & Search
   const [txSearchTerm, setTxSearchTerm] = useState("");
-  const [txMethodFilter, setTxMethodFilter] = useState("all");
+  const [txMethodFilter, setTxMethodFilter] = useState<string>(FILTER_ALL);
 
   const filteredPayments = payments.filter((p) => {
     const matchesSearch =
@@ -328,13 +338,13 @@ export function FeesPaymentsWorkflow({
       (p.notes && p.notes.toLowerCase().includes(txSearchTerm.toLowerCase()));
 
     const matchesMethod =
-      txMethodFilter === "all" || p.paymentMethod === txMethodFilter;
+      txMethodFilter === FILTER_ALL || p.paymentMethod === txMethodFilter;
 
     return matchesSearch && matchesMethod;
   });
 
   const [paymentsCurrentPage, setPaymentsCurrentPage] = useState(1);
-  const [paymentsPageSize, setPaymentsPageSize] = useState(10);
+  const [paymentsPageSize, setPaymentsPageSize] = useState<number>(PAGINATION.DEFAULT_PAGE_SIZE);
 
   useEffect(() => {
     setPaymentsCurrentPage(1);
@@ -477,10 +487,9 @@ export function FeesPaymentsWorkflow({
                 onChange={(e) => setAccountBalanceFilter(e.target.value)}
                 className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
               >
-                <option value="all">All Accounts</option>
-                <option value="overdue">Overdue Only</option>
-                <option value="outstanding">Outstanding Balance</option>
-                <option value="settled">Fully Settled</option>
+                {ACCOUNT_BALANCE_FILTER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -872,11 +881,11 @@ export function FeesPaymentsWorkflow({
                 onChange={(e) => setPayMethod(e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
               >
-                <option value="Bank Transfer" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Bank Transfer / Wire</option>
-                <option value="Debit Card" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Debit Card</option>
-                <option value="Credit Card" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Credit Card</option>
-                <option value="Cheque" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Cheque / Draft</option>
-                <option value="Sponsorship Wire" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Sponsorship Wire</option>
+                {PAYMENT_METHODS.map((method) => (
+                  <option key={method} value={method} className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">
+                    {method}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

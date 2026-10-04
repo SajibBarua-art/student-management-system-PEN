@@ -30,6 +30,15 @@ import {
 import { calculateLatePenalty } from "@/lib/academic-engine";
 import { formatDateTime } from "@/lib/formatters";
 import { Pagination } from "@/components/ui/pagination";
+import {
+  API_ROUTES,
+  CLASSIFICATION_FILTER_OPTIONS,
+  FILTER_ALL,
+  GRADE_CLASSIFICATIONS,
+  GRADE_THRESHOLDS,
+  PAGINATION,
+  PUBLICATION_STATUS_FILTERS,
+} from "@/constants";
 
 interface MarksheetWorkflowProps {
   initialAssessmentId?: string | null;
@@ -75,8 +84,8 @@ export function MarksheetWorkflow({
     setIsLoading(true);
     try {
       const [resAsm, resStu] = await Promise.all([
-        fetch("/api/assessments"),
-        fetch("/api/students"),
+        fetch(API_ROUTES.ASSESSMENTS),
+        fetch(API_ROUTES.STUDENTS),
       ]);
       const dataAsm = await resAsm.json();
       const dataStu = await resStu.json();
@@ -206,7 +215,7 @@ export function MarksheetWorkflow({
       publishStateOverride !== undefined ? publishStateOverride : row.isPublished;
 
     try {
-      const res = await fetch("/api/grades", {
+      const res = await fetch(API_ROUTES.GRADES, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -250,7 +259,7 @@ export function MarksheetWorkflow({
     setBatchActionLoading(true);
 
     try {
-      const res = await fetch("/api/grades/publish", {
+      const res = await fetch(API_ROUTES.GRADES_PUBLISH, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -329,7 +338,7 @@ export function MarksheetWorkflow({
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState<number>(PAGINATION.DEFAULT_PAGE_SIZE);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -387,25 +396,25 @@ export function MarksheetWorkflow({
           <span className="font-extrabold text-emerald-700 dark:text-emerald-400 block text-sm">
             Distinction
           </span>
-          <span className="text-[11px] text-emerald-600 dark:text-emerald-500/80 font-medium">Grade ≥ 70%</span>
+          <span className="text-[11px] text-emerald-600 dark:text-emerald-500/80 font-medium">Grade ≥ {GRADE_THRESHOLDS.DISTINCTION}%</span>
         </div>
         <div className="p-3.5 rounded-2xl bg-sky-50 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-500/25 text-center">
           <span className="font-extrabold text-sky-700 dark:text-sky-400 block text-sm">
             Merit
           </span>
-          <span className="text-[11px] text-sky-600 dark:text-sky-500/80 font-medium">Grade ≥ 60%</span>
+          <span className="text-[11px] text-sky-600 dark:text-sky-500/80 font-medium">Grade ≥ {GRADE_THRESHOLDS.MERIT}%</span>
         </div>
         <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-500/25 text-center">
           <span className="font-extrabold text-amber-700 dark:text-amber-400 block text-sm">
             Pass
           </span>
-          <span className="text-[11px] text-amber-600 dark:text-amber-500/80 font-medium">Grade ≥ 40%</span>
+          <span className="text-[11px] text-amber-600 dark:text-amber-500/80 font-medium">Grade ≥ {GRADE_THRESHOLDS.PASS}%</span>
         </div>
         <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-500/25 text-center">
           <span className="font-extrabold text-rose-700 dark:text-rose-400 block text-sm">
             Fail (Resit Required)
           </span>
-          <span className="text-[11px] text-rose-600 dark:text-rose-500/80 font-medium">Grade &lt; 40%</span>
+          <span className="text-[11px] text-rose-600 dark:text-rose-500/80 font-medium">Grade &lt; {GRADE_THRESHOLDS.PASS}%</span>
         </div>
       </div>
 
@@ -496,11 +505,9 @@ export function MarksheetWorkflow({
                   onChange={(e) => setClassificationFilter(e.target.value)}
                   className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 >
-                  <option value="all">All Grades</option>
-                  <option value="DISTINCTION">Distinction (≥70%)</option>
-                  <option value="MERIT">Merit (60-69%)</option>
-                  <option value="PASS">Pass (40-59%)</option>
-                  <option value="FAIL">Fail (&lt;40%)</option>
+                  {CLASSIFICATION_FILTER_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
                   <option value="UNGRADED">Ungraded</option>
                 </select>
               </div>
@@ -772,6 +779,7 @@ export function MarksheetWorkflow({
           pageSize={pageSize}
           onPageChange={setCurrentPage}
           onPageSizeChange={setPageSize}
+          pageSizeOptions={PAGINATION.OPTIONS.DEFAULT}
           itemLabel="candidates"
         />
       </Card>

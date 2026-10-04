@@ -26,6 +26,13 @@ import { formatCurrency, formatDate } from "@/lib/formatters";
 import { calculateAcademicStanding } from "@/lib/academic-engine";
 import { OfficialTranscriptModal } from "@/components/documents/OfficialTranscriptModal";
 import { Pagination } from "@/components/ui/pagination";
+import {
+  API_ROUTES,
+  ENROLMENT_STATUSES,
+  ENROLMENT_STATUS_OPTIONS,
+  FILTER_ALL,
+  PAGINATION,
+} from "@/constants";
 
 interface EnrolmentWorkflowProps {
   students: any[];
@@ -48,8 +55,8 @@ export function EnrolmentWorkflow({
 }: EnrolmentWorkflowProps) {
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProgramme, setSelectedProgramme] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedProgramme, setSelectedProgramme] = useState<string>(FILTER_ALL);
+  const [selectedStatus, setSelectedStatus] = useState<string>(FILTER_ALL);
   const [overdueOnly, setOverdueOnly] = useState(false);
 
   // Modals & Drawers
@@ -57,7 +64,7 @@ export function EnrolmentWorkflow({
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isTranscriptModalOpen, setIsTranscriptModalOpen] = useState(false);
   const [isStatusEditOpen, setIsStatusEditOpen] = useState(false);
-  const [statusToUpdate, setStatusToUpdate] = useState<string>("ENROLLED");
+  const [statusToUpdate, setStatusToUpdate] = useState<string>(ENROLMENT_STATUSES.ENROLLED);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -80,10 +87,10 @@ export function EnrolmentWorkflow({
       s.email.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesProgramme =
-      selectedProgramme === "all" || s.programmeId === selectedProgramme;
+      selectedProgramme === FILTER_ALL || s.programmeId === selectedProgramme;
 
     const matchesStatus =
-      selectedStatus === "all" || s.status === selectedStatus;
+      selectedStatus === FILTER_ALL || s.status === selectedStatus;
 
     const matchesOverdue = !overdueOnly || s.isOverdue;
 
@@ -91,7 +98,7 @@ export function EnrolmentWorkflow({
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState<number>(PAGINATION.DEFAULT_PAGE_SIZE);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -104,13 +111,13 @@ export function EnrolmentWorkflow({
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "ENROLLED":
+      case ENROLMENT_STATUSES.ENROLLED:
         return <Badge variant="success" dot>Enrolled</Badge>;
-      case "DEFERRED":
+      case ENROLMENT_STATUSES.DEFERRED:
         return <Badge variant="warning" dot>Deferred</Badge>;
-      case "WITHDRAWN":
+      case ENROLMENT_STATUSES.WITHDRAWN:
         return <Badge variant="danger" dot>Withdrawn</Badge>;
-      case "COMPLETED":
+      case ENROLMENT_STATUSES.COMPLETED:
         return <Badge variant="purple" dot>Completed</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
@@ -123,7 +130,7 @@ export function EnrolmentWorkflow({
     setFormError(null);
 
     try {
-      const res = await fetch("/api/students", {
+      const res = await fetch(API_ROUTES.STUDENTS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -155,7 +162,7 @@ export function EnrolmentWorkflow({
     if (!selectedStudent) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch(`/api/students/${selectedStudent.id}`, {
+      const res = await fetch(`${API_ROUTES.STUDENTS}/${selectedStudent.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: statusToUpdate }),
@@ -233,11 +240,11 @@ export function EnrolmentWorkflow({
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
             >
-              <option value="all" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">All Statuses</option>
-              <option value="ENROLLED" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Enrolled</option>
-              <option value="DEFERRED" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Deferred</option>
-              <option value="WITHDRAWN" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Withdrawn</option>
-              <option value="COMPLETED" className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">Completed</option>
+              {ENROLMENT_STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value} className="bg-white text-slate-900 dark:bg-[#111625] dark:text-white">
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -415,6 +422,7 @@ export function EnrolmentWorkflow({
           pageSize={pageSize}
           onPageChange={setCurrentPage}
           onPageSizeChange={setPageSize}
+          pageSizeOptions={PAGINATION.OPTIONS.DEFAULT}
           itemLabel="students"
         />
       </Card>

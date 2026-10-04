@@ -1,4 +1,5 @@
 import { GradeClassification } from "@/generated/prisma/client";
+import { GRADE_THRESHOLDS, GRADE_CLASSIFICATIONS } from "@/constants";
 
 /**
  * Calculates academic grade classification:
@@ -8,22 +9,22 @@ import { GradeClassification } from "@/generated/prisma/client";
  * - Fail: < 40
  */
 export function getGradeClassification(score: number): GradeClassification {
-  if (score >= 70) return "DISTINCTION";
-  if (score >= 60) return "MERIT";
-  if (score >= 40) return "PASS";
-  return "FAIL";
+  if (score >= GRADE_THRESHOLDS.DISTINCTION) return GRADE_CLASSIFICATIONS.DISTINCTION;
+  if (score >= GRADE_THRESHOLDS.MERIT) return GRADE_CLASSIFICATIONS.MERIT;
+  if (score >= GRADE_THRESHOLDS.PASS) return GRADE_CLASSIFICATIONS.PASS;
+  return GRADE_CLASSIFICATIONS.FAIL;
 }
 
 export function getClassificationLabel(classification: GradeClassification): string {
   switch (classification) {
-    case "DISTINCTION":
-      return "Distinction (≥70%)";
-    case "MERIT":
-      return "Merit (≥60%)";
-    case "PASS":
-      return "Pass (≥40%)";
-    case "FAIL":
-      return "Fail (<40%)";
+    case GRADE_CLASSIFICATIONS.DISTINCTION:
+      return `Distinction (≥${GRADE_THRESHOLDS.DISTINCTION}%)`;
+    case GRADE_CLASSIFICATIONS.MERIT:
+      return `Merit (≥${GRADE_THRESHOLDS.MERIT}%)`;
+    case GRADE_CLASSIFICATIONS.PASS:
+      return `Pass (≥${GRADE_THRESHOLDS.PASS}%)`;
+    case GRADE_CLASSIFICATIONS.FAIL:
+      return `Fail (<${GRADE_THRESHOLDS.PASS}%)`;
     default:
       return classification;
   }

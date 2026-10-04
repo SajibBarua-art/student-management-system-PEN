@@ -44,6 +44,20 @@ import {
   getClassificationLabel,
 } from "@/lib/grade-classification";
 import { calculateAcademicStanding } from "@/lib/academic-engine";
+import {
+  API_ROUTES,
+  FILTER_ALL,
+  PAGINATION,
+  ASSESSMENT_STATUS_FILTERS,
+  ASSESSMENT_STATUS_FILTER_OPTIONS,
+  CLASSIFICATION_FILTER_OPTIONS,
+  FEE_CATEGORY_FILTERS,
+  FEE_CATEGORY_FILTER_OPTIONS,
+  FEE_TYPES,
+  EC_REASONS,
+  EC_REASON_OPTIONS,
+  EC_EXTENSION_DAY_OPTIONS,
+} from "@/constants";
 
 interface StudentPortalProps {
   studentId: string;
@@ -103,7 +117,7 @@ export function StudentPortal({
   // Extenuating Circumstances (EC) modal state
   const [isEcModalOpen, setIsEcModalOpen] = useState(false);
   const [activeAssessmentForEc, setActiveAssessmentForEc] = useState<any | null>(null);
-  const [ecReason, setEcReason] = useState<string>("MEDICAL");
+  const [ecReason, setEcReason] = useState<string>(EC_REASONS.MEDICAL);
   const [ecExplanation, setEcExplanation] = useState<string>("");
   const [ecDays, setEcDays] = useState<string>("7");
   const [isSubmittingEc, setIsSubmittingEc] = useState(false);
@@ -118,7 +132,7 @@ export function StudentPortal({
       setEcExplanation(existing.explanation);
       setEcDays(existing.requestedExtensionDays.toString());
     } else {
-      setEcReason("MEDICAL");
+      setEcReason(EC_REASONS.MEDICAL);
       setEcExplanation("");
       setEcDays("7");
     }
@@ -139,7 +153,7 @@ export function StudentPortal({
     setEcSuccess(null);
 
     try {
-      const res = await fetch("/api/extenuating-circumstances", {
+      const res = await fetch(API_ROUTES.EXTENUATING_CIRCUMSTANCES, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -174,8 +188,8 @@ export function StudentPortal({
     setPortalError(null);
     try {
       const [resStu, resAsm] = await Promise.all([
-        fetch(`/api/students/${studentId}`),
-        fetch("/api/assessments"),
+        fetch(`${API_ROUTES.STUDENTS}/${studentId}`),
+        fetch(API_ROUTES.ASSESSMENTS),
       ]);
       const dataStu = await resStu.json();
       const dataAsm = await resAsm.json();
@@ -239,7 +253,7 @@ export function StudentPortal({
     if (uploadNotes) formData.append("notes", uploadNotes);
 
     try {
-      const res = await fetch("/api/submissions", {
+      const res = await fetch(API_ROUTES.SUBMISSIONS, {
         method: "POST",
         body: formData,
       });
@@ -293,9 +307,9 @@ export function StudentPortal({
 
   // Tab 1: Coursework Deliverables filters & pagination
   const [assessmentSearchTerm, setAssessmentSearchTerm] = useState("");
-  const [assessmentStatusFilter, setAssessmentStatusFilter] = useState("all");
+  const [assessmentStatusFilter, setAssessmentStatusFilter] = useState<string>(FILTER_ALL);
   const [assessmentsPage, setAssessmentsPage] = useState(1);
-  const [assessmentsPageSize, setAssessmentsPageSize] = useState(6);
+  const [assessmentsPageSize, setAssessmentsPageSize] = useState<number>(PAGINATION.CARD_PAGE_SIZE);
 
   const filteredAssessments = assessments.filter((asm) => {
     const matchesSearch =
@@ -308,13 +322,13 @@ export function StudentPortal({
     const pastDeadline = isPastDate(asm.deadline);
 
     let matchesStatus = true;
-    if (assessmentStatusFilter === "open") {
+    if (assessmentStatusFilter === ASSESSMENT_STATUS_FILTERS.OPEN) {
       matchesStatus = !pastDeadline;
-    } else if (assessmentStatusFilter === "passed") {
+    } else if (assessmentStatusFilter === ASSESSMENT_STATUS_FILTERS.PASSED) {
       matchesStatus = pastDeadline;
-    } else if (assessmentStatusFilter === "submitted") {
+    } else if (assessmentStatusFilter === ASSESSMENT_STATUS_FILTERS.SUBMITTED) {
       matchesStatus = !!mySubmission;
-    } else if (assessmentStatusFilter === "pending") {
+    } else if (assessmentStatusFilter === ASSESSMENT_STATUS_FILTERS.PENDING) {
       matchesStatus = !mySubmission;
     }
 
@@ -336,9 +350,9 @@ export function StudentPortal({
   const academicStanding = student.academicStanding || calculateAcademicStanding(student.grades || [], true);
 
   const [gradesSearchTerm, setGradesSearchTerm] = useState("");
-  const [gradesClassificationFilter, setGradesClassificationFilter] = useState("all");
+  const [gradesClassificationFilter, setGradesClassificationFilter] = useState<string>(FILTER_ALL);
   const [gradesPage, setGradesPage] = useState(1);
-  const [gradesPageSize, setGradesPageSize] = useState(5);
+  const [gradesPageSize, setGradesPageSize] = useState<number>(PAGINATION.COMPACT_PAGE_SIZE);
 
   const filteredGrades = publishedGrades.filter((g: any) => {
     const matchesSearch =
@@ -348,7 +362,7 @@ export function StudentPortal({
       (g.feedback && g.feedback.toLowerCase().includes(gradesSearchTerm.toLowerCase()));
 
     const matchesClass =
-      gradesClassificationFilter === "all" || g.classification === gradesClassificationFilter;
+      gradesClassificationFilter === FILTER_ALL || g.classification === gradesClassificationFilter;
 
     return matchesSearch && matchesClass;
   });
@@ -365,9 +379,9 @@ export function StudentPortal({
   // Tab 3: Fee Billing Schedule filters & pagination
   const studentFees = student.fees || [];
   const [feesSearchTerm, setFeesSearchTerm] = useState("");
-  const [feesCategoryFilter, setFeesCategoryFilter] = useState("all");
+  const [feesCategoryFilter, setFeesCategoryFilter] = useState<string>(FILTER_ALL);
   const [feesPage, setFeesPage] = useState(1);
-  const [feesPageSize, setFeesPageSize] = useState(5);
+  const [feesPageSize, setFeesPageSize] = useState<number>(PAGINATION.COMPACT_PAGE_SIZE);
 
   const filteredFees = studentFees.filter((fee: any) => {
     const matchesSearch =
@@ -375,10 +389,10 @@ export function StudentPortal({
       fee.description?.toLowerCase().includes(feesSearchTerm.toLowerCase());
 
     const matchesCategory =
-      feesCategoryFilter === "all" ||
-      (feesCategoryFilter === "SCHOLARSHIP" && fee.amount < 0) ||
-      (feesCategoryFilter === "INSTALMENT" && fee.feeType === "INSTALMENT_TRANCHE") ||
-      (feesCategoryFilter === "TUITION" && fee.amount >= 0 && fee.feeType !== "INSTALMENT_TRANCHE");
+      feesCategoryFilter === FILTER_ALL ||
+      (feesCategoryFilter === FEE_CATEGORY_FILTERS.SCHOLARSHIP && fee.amount < 0) ||
+      (feesCategoryFilter === FEE_CATEGORY_FILTERS.INSTALMENT && fee.feeType === FEE_TYPES.INSTALMENT_TRANCHE) ||
+      (feesCategoryFilter === FEE_CATEGORY_FILTERS.TUITION && fee.amount >= 0 && fee.feeType !== FEE_TYPES.INSTALMENT_TRANCHE);
 
     return matchesSearch && matchesCategory;
   });
@@ -395,9 +409,9 @@ export function StudentPortal({
   // Tab 3: Payment Receipts & History filters & pagination
   const studentPayments = student.payments || [];
   const [paymentsSearchTerm, setPaymentsSearchTerm] = useState("");
-  const [paymentsMethodFilter, setPaymentsMethodFilter] = useState("all");
+  const [paymentsMethodFilter, setPaymentsMethodFilter] = useState<string>(FILTER_ALL);
   const [paymentsPage, setPaymentsPage] = useState(1);
-  const [paymentsPageSize, setPaymentsPageSize] = useState(5);
+  const [paymentsPageSize, setPaymentsPageSize] = useState<number>(PAGINATION.COMPACT_PAGE_SIZE);
 
   const filteredPayments = studentPayments.filter((p: any) => {
     const matchesSearch =
@@ -406,7 +420,7 @@ export function StudentPortal({
       (p.notes && p.notes.toLowerCase().includes(paymentsSearchTerm.toLowerCase()));
 
     const matchesMethod =
-      paymentsMethodFilter === "all" || p.paymentMethod === paymentsMethodFilter;
+      paymentsMethodFilter === FILTER_ALL || p.paymentMethod === paymentsMethodFilter;
 
     return matchesSearch && matchesMethod;
   });
@@ -567,11 +581,11 @@ export function StudentPortal({
                   onChange={(e) => setAssessmentStatusFilter(e.target.value)}
                   className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 >
-                  <option value="all">All Deliverables</option>
-                  <option value="open">Open for Submission</option>
-                  <option value="passed">Deadline Passed</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="pending">Pending Upload</option>
+                  {ASSESSMENT_STATUS_FILTER_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -760,7 +774,7 @@ export function StudentPortal({
             pageSize={assessmentsPageSize}
             onPageChange={setAssessmentsPage}
             onPageSizeChange={setAssessmentsPageSize}
-            pageSizeOptions={[6, 12, 24]}
+            pageSizeOptions={[...PAGINATION.OPTIONS.CARDS]}
             itemLabel="assignments"
           />
         </div>
@@ -897,11 +911,11 @@ export function StudentPortal({
                       onChange={(e) => setGradesClassificationFilter(e.target.value)}
                       className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     >
-                      <option value="all">All Grades</option>
-                      <option value="DISTINCTION">Distinction (70%+)</option>
-                      <option value="MERIT">Merit (60-69%)</option>
-                      <option value="PASS">Pass (40-59%)</option>
-                      <option value="FAIL">Fail (&lt;40%)</option>
+                      {CLASSIFICATION_FILTER_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -982,7 +996,7 @@ export function StudentPortal({
                 pageSize={gradesPageSize}
                 onPageChange={setGradesPage}
                 onPageSizeChange={setGradesPageSize}
-                pageSizeOptions={[5, 10, 20]}
+                pageSizeOptions={[...PAGINATION.OPTIONS.COMPACT]}
                 itemLabel="grades"
               />
             </Card>
@@ -1083,10 +1097,11 @@ export function StudentPortal({
                     onChange={(e) => setFeesCategoryFilter(e.target.value)}
                     className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   >
-                    <option value="all">All Items</option>
-                    <option value="TUITION">Tuition Only</option>
-                    <option value="INSTALMENT">Instalments</option>
-                    <option value="SCHOLARSHIP">Scholarships / Waivers</option>
+                    {FEE_CATEGORY_FILTER_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -1163,7 +1178,7 @@ export function StudentPortal({
               pageSize={feesPageSize}
               onPageChange={setFeesPage}
               onPageSizeChange={setFeesPageSize}
-              pageSizeOptions={[5, 10, 20]}
+              pageSizeOptions={[...PAGINATION.OPTIONS.COMPACT]}
               itemLabel="billing items"
             />
           </Card>
@@ -1206,7 +1221,7 @@ export function StudentPortal({
                     onChange={(e) => setPaymentsMethodFilter(e.target.value)}
                     className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   >
-                    <option value="all">All Methods</option>
+                    <option value={FILTER_ALL}>All Methods</option>
                     {Array.from(new Set<string>(studentPayments.map((p: any) => p.paymentMethod).filter(Boolean))).map((method: string) => (
                       <option key={method} value={method}>{method}</option>
                     ))}
@@ -1286,7 +1301,7 @@ export function StudentPortal({
               pageSize={paymentsPageSize}
               onPageChange={setPaymentsPage}
               onPageSizeChange={setPaymentsPageSize}
-              pageSizeOptions={[5, 10, 20]}
+              pageSizeOptions={[...PAGINATION.OPTIONS.COMPACT]}
               itemLabel="payments"
             />
           </Card>
@@ -1437,10 +1452,11 @@ export function StudentPortal({
                 onChange={(e) => setEcReason(e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer font-bold"
               >
-                <option value="MEDICAL">Medical Emergency / Illness</option>
-                <option value="BEREAVEMENT">Bereavement / Family Loss</option>
-                <option value="ACUTE_PERSONAL">Acute Personal Crisis</option>
-                <option value="TECHNICAL_FAILURE">Major System / Technical Malfunction</option>
+                {EC_REASON_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -1453,9 +1469,11 @@ export function StudentPortal({
                 onChange={(e) => setEcDays(e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer font-bold"
               >
-                <option value="7">7 Days Extension (Standard)</option>
-                <option value="14">14 Days Extension (Major Medical)</option>
-                <option value="21">21 Days Extension (Exceptional)</option>
+                {EC_EXTENSION_DAY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

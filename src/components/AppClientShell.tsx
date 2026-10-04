@@ -11,6 +11,7 @@ import { MarksheetWorkflow } from "@/components/staff/MarksheetWorkflow";
 import { AuditTrailWorkflow } from "@/components/staff/AuditTrailWorkflow";
 import { StudentPortal } from "@/components/student/StudentPortal";
 import { StudentPersona } from "@/lib/server-data";
+import { API_ROUTES } from "@/constants";
 
 interface AppClientShellProps {
   initialRole: "staff" | "student";
@@ -126,9 +127,9 @@ export function AppClientShell({
     setIsLoading(true);
     try {
       const [resStats, resStudents, resProgrammes] = await Promise.all([
-        fetch("/api/dashboard/stats"),
-        fetch("/api/students"),
-        fetch("/api/programmes"),
+        fetch(API_ROUTES.DASHBOARD_STATS),
+        fetch(API_ROUTES.STUDENTS),
+        fetch(API_ROUTES.PROGRAMMES),
       ]);
       const dataStats = await resStats.json();
       const dataStudents = await resStudents.json();

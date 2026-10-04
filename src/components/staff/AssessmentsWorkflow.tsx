@@ -27,6 +27,12 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { formatDate, formatDateTime, isPastDate } from "@/lib/formatters";
 import { Pagination } from "@/components/ui/pagination";
+import {
+  API_ROUTES,
+  ASSESSMENT_DEFAULTS,
+  FILTER_ALL,
+  PAGINATION,
+} from "@/constants";
 
 interface AssessmentsWorkflowProps {
   programmes: any[];
@@ -55,8 +61,8 @@ export function AssessmentsWorkflow({
     programmeId: programmes[0]?.id || "",
     deadline: "",
     description: "",
-    totalMarks: "100",
-    credits: "15",
+    totalMarks: String(ASSESSMENT_DEFAULTS.TOTAL_MARKS),
+    credits: String(ASSESSMENT_DEFAULTS.CREDITS),
     academicYear: "2024/2025",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,8 +70,8 @@ export function AssessmentsWorkflow({
 
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [programmeFilter, setProgrammeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<string>(FILTER_ALL);
+  const [programmeFilter, setProgrammeFilter] = useState<string>(FILTER_ALL);
 
   const filteredAssessments = assessments.filter((asm) => {
     const matchesSearch =
@@ -76,19 +82,19 @@ export function AssessmentsWorkflow({
 
     const hasPassed = isPastDate(asm.deadline);
     const matchesStatus =
-      statusFilter === "all" ||
+      statusFilter === FILTER_ALL ||
       (statusFilter === "active" && !hasPassed) ||
       (statusFilter === "passed" && hasPassed);
 
     const matchesProgramme =
-      programmeFilter === "all" || asm.programmeId === programmeFilter;
+      programmeFilter === FILTER_ALL || asm.programmeId === programmeFilter;
 
     return matchesSearch && matchesStatus && matchesProgramme;
   });
 
   // Pagination for Assessments Grid
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(6);
+  const [pageSize, setPageSize] = useState<number>(PAGINATION.CARD_PAGE_SIZE);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -102,7 +108,7 @@ export function AssessmentsWorkflow({
   const fetchAssessments = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/assessments");
+      const res = await fetch(API_ROUTES.ASSESSMENTS);
       const data = await res.json();
       if (data.success) {
         setAssessments(data.data);
@@ -120,7 +126,7 @@ export function AssessmentsWorkflow({
   ) => {
     setReviewingEcId(ecId);
     try {
-      const res = await fetch("/api/extenuating-circumstances", {
+      const res = await fetch(API_ROUTES.EXTENUATING_CIRCUMSTANCES, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -135,7 +141,7 @@ export function AssessmentsWorkflow({
       const data = await res.json();
       if (data.success) {
         // Refresh assessments list and current modal view
-        const updatedRes = await fetch("/api/assessments");
+        const updatedRes = await fetch(API_ROUTES.ASSESSMENTS);
         const updatedData = await updatedRes.json();
         if (updatedData.success) {
           setAssessments(updatedData.data);
@@ -167,7 +173,7 @@ export function AssessmentsWorkflow({
     setFormError(null);
 
     try {
-      const res = await fetch("/api/assessments", {
+      const res = await fetch(API_ROUTES.ASSESSMENTS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -417,7 +423,7 @@ export function AssessmentsWorkflow({
               pageSize={pageSize}
               onPageChange={setCurrentPage}
               onPageSizeChange={setPageSize}
-              pageSizeOptions={[6, 12, 24]}
+              pageSizeOptions={PAGINATION.OPTIONS.CARDS}
               itemLabel="assessments"
             />
           </Card>

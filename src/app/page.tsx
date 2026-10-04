@@ -10,6 +10,7 @@ import {
 } from "@/lib/server-data";
 import { AppClientShell } from "@/components/AppClientShell";
 import { InstitutionalPersona } from "@/components/layout/Navbar";
+import { USER_ROLES } from "@/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,7 @@ export default async function Page({ searchParams }: PageProps) {
 
   const role = (params.role === "student" ? "student" : "staff") as "staff" | "student";
   const tab = params.tab || "overview";
-  const persona = (params.persona as InstitutionalPersona) || (role === "student" ? "STUDENT" : "REGISTRY_ADMIN");
+  const persona = (params.persona as InstitutionalPersona) || (role === "student" ? USER_ROLES.STUDENT : USER_ROLES.REGISTRY_ADMIN);
 
   // 1. Fetch lightweight personas for the Navbar switcher (always needed for layout)
   const studentPersonas = await getStudentPersonas();
