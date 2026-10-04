@@ -15,6 +15,7 @@ import {
   Building2,
   CheckCircle2,
   Lock,
+  X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +32,7 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
   const [isLoading, setIsLoading] = useState(initialLogs === undefined);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedActionFilter, setSelectedActionFilter] = useState("ALL");
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState("ALL");
 
   const fetchLogs = async () => {
     setIsLoading(true);
@@ -87,7 +89,8 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
       searchTerm === "" ||
       log.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
       log.actor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.action.toLowerCase().includes(searchTerm.toLowerCase());
+      log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (log.role && log.role.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesAction =
       selectedActionFilter === "ALL" ||
@@ -99,15 +102,18 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
           log.action.includes("SCHOLARSHIP") ||
           log.action.includes("INSTALMENT")));
 
-    return matchesSearch && matchesAction;
+    const matchesRole =
+      selectedRoleFilter === "ALL" || log.role === selectedRoleFilter;
+
+    return matchesSearch && matchesAction && matchesRole;
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(15);
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedActionFilter]);
+  }, [searchTerm, selectedActionFilter, selectedRoleFilter]);
 
   const paginatedLogs = filteredLogs.slice(
     (currentPage - 1) * pageSize,
@@ -209,39 +215,65 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
             <CardTitle className="text-base">Institutional Event Stream</CardTitle>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
             {/* Action Filter */}
             <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs">
               <button
+                type="button"
                 onClick={() => setSelectedActionFilter("ALL")}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${
-                  selectedActionFilter === "ALL"
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${selectedActionFilter === "ALL"
                     ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                }`}
+                  }`}
               >
                 All Events
               </button>
               <button
+                type="button"
                 onClick={() => setSelectedActionFilter("GRADES")}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${
-                  selectedActionFilter === "GRADES"
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${selectedActionFilter === "GRADES"
                     ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                }`}
+                  }`}
               >
                 Grading & Board
               </button>
               <button
+                type="button"
                 onClick={() => setSelectedActionFilter("EC")}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${
-                  selectedActionFilter === "EC"
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${selectedActionFilter === "EC"
                     ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                }`}
+                  }`}
               >
                 EC Claims
               </button>
+              <button
+                type="button"
+                onClick={() => setSelectedActionFilter("FINANCE")}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${selectedActionFilter === "FINANCE"
+                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                  }`}
+              >
+                Finance
+              </button>
+            </div>
+
+            {/* Role Filter */}
+            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+              <Filter className="w-3.5 h-3.5" />
+              <span>Role:</span>
+              <select
+                value={selectedRoleFilter}
+                onChange={(e) => setSelectedRoleFilter(e.target.value)}
+                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="ALL">All Roles</option>
+                {Array.from(new Set<string>(logs.map((l) => l.role).filter(Boolean))).map((role: string) => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
             </div>
 
             {/* Search Input */}
@@ -252,8 +284,17 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
                 placeholder="Search audit trail..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 w-48 sm:w-56"
+                className="pl-8 pr-7 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-44 sm:w-56"
               />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
             </div>
           </div>
         </CardHeader>

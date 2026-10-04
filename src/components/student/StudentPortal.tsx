@@ -21,6 +21,9 @@ import {
   CheckCircle2,
   Printer,
   Receipt,
+  Search,
+  Filter,
+  X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -288,30 +291,131 @@ export function StudentPortal({
     );
   }
 
+  // Tab 1: Coursework Deliverables filters & pagination
+  const [assessmentSearchTerm, setAssessmentSearchTerm] = useState("");
+  const [assessmentStatusFilter, setAssessmentStatusFilter] = useState("all");
+  const [assessmentsPage, setAssessmentsPage] = useState(1);
+  const [assessmentsPageSize, setAssessmentsPageSize] = useState(6);
+
+  const filteredAssessments = assessments.filter((asm) => {
+    const matchesSearch =
+      assessmentSearchTerm === "" ||
+      asm.title?.toLowerCase().includes(assessmentSearchTerm.toLowerCase()) ||
+      asm.moduleCode?.toLowerCase().includes(assessmentSearchTerm.toLowerCase()) ||
+      asm.moduleName?.toLowerCase().includes(assessmentSearchTerm.toLowerCase());
+
+    const mySubmission = student.submissions?.find((s: any) => s.assessmentId === asm.id);
+    const pastDeadline = isPastDate(asm.deadline);
+
+    let matchesStatus = true;
+    if (assessmentStatusFilter === "open") {
+      matchesStatus = !pastDeadline;
+    } else if (assessmentStatusFilter === "passed") {
+      matchesStatus = pastDeadline;
+    } else if (assessmentStatusFilter === "submitted") {
+      matchesStatus = !!mySubmission;
+    } else if (assessmentStatusFilter === "pending") {
+      matchesStatus = !mySubmission;
+    }
+
+    return matchesSearch && matchesStatus;
+  });
+
+  useEffect(() => {
+    setAssessmentsPage(1);
+  }, [assessmentSearchTerm, assessmentStatusFilter]);
+
+  const paginatedAssessments = filteredAssessments.slice(
+    (assessmentsPage - 1) * assessmentsPageSize,
+    assessmentsPage * assessmentsPageSize
+  );
+
+  // Tab 2: Official Marksheet Table filters & pagination
   const publishedGrades = student.grades?.filter((g: any) => g.isPublished) || [];
   const withheldGradesCount = (student.grades?.length || 0) - publishedGrades.length;
   const academicStanding = student.academicStanding || calculateAcademicStanding(student.grades || [], true);
 
-  // Pagination states for all Student Portal tables
+  const [gradesSearchTerm, setGradesSearchTerm] = useState("");
+  const [gradesClassificationFilter, setGradesClassificationFilter] = useState("all");
   const [gradesPage, setGradesPage] = useState(1);
   const [gradesPageSize, setGradesPageSize] = useState(5);
-  const paginatedGrades = publishedGrades.slice(
+
+  const filteredGrades = publishedGrades.filter((g: any) => {
+    const matchesSearch =
+      gradesSearchTerm === "" ||
+      g.assessment?.moduleCode?.toLowerCase().includes(gradesSearchTerm.toLowerCase()) ||
+      g.assessment?.title?.toLowerCase().includes(gradesSearchTerm.toLowerCase()) ||
+      (g.feedback && g.feedback.toLowerCase().includes(gradesSearchTerm.toLowerCase()));
+
+    const matchesClass =
+      gradesClassificationFilter === "all" || g.classification === gradesClassificationFilter;
+
+    return matchesSearch && matchesClass;
+  });
+
+  useEffect(() => {
+    setGradesPage(1);
+  }, [gradesSearchTerm, gradesClassificationFilter]);
+
+  const paginatedGrades = filteredGrades.slice(
     (gradesPage - 1) * gradesPageSize,
     gradesPage * gradesPageSize
   );
 
+  // Tab 3: Fee Billing Schedule filters & pagination
+  const studentFees = student.fees || [];
+  const [feesSearchTerm, setFeesSearchTerm] = useState("");
+  const [feesCategoryFilter, setFeesCategoryFilter] = useState("all");
   const [feesPage, setFeesPage] = useState(1);
   const [feesPageSize, setFeesPageSize] = useState(5);
-  const studentFees = student.fees || [];
-  const paginatedFees = studentFees.slice(
+
+  const filteredFees = studentFees.filter((fee: any) => {
+    const matchesSearch =
+      feesSearchTerm === "" ||
+      fee.description?.toLowerCase().includes(feesSearchTerm.toLowerCase());
+
+    const matchesCategory =
+      feesCategoryFilter === "all" ||
+      (feesCategoryFilter === "SCHOLARSHIP" && fee.amount < 0) ||
+      (feesCategoryFilter === "INSTALMENT" && fee.feeType === "INSTALMENT_TRANCHE") ||
+      (feesCategoryFilter === "TUITION" && fee.amount >= 0 && fee.feeType !== "INSTALMENT_TRANCHE");
+
+    return matchesSearch && matchesCategory;
+  });
+
+  useEffect(() => {
+    setFeesPage(1);
+  }, [feesSearchTerm, feesCategoryFilter]);
+
+  const paginatedFees = filteredFees.slice(
     (feesPage - 1) * feesPageSize,
     feesPage * feesPageSize
   );
 
+  // Tab 3: Payment Receipts & History filters & pagination
+  const studentPayments = student.payments || [];
+  const [paymentsSearchTerm, setPaymentsSearchTerm] = useState("");
+  const [paymentsMethodFilter, setPaymentsMethodFilter] = useState("all");
   const [paymentsPage, setPaymentsPage] = useState(1);
   const [paymentsPageSize, setPaymentsPageSize] = useState(5);
-  const studentPayments = student.payments || [];
-  const paginatedPayments = studentPayments.slice(
+
+  const filteredPayments = studentPayments.filter((p: any) => {
+    const matchesSearch =
+      paymentsSearchTerm === "" ||
+      p.referenceNumber?.toLowerCase().includes(paymentsSearchTerm.toLowerCase()) ||
+      (p.notes && p.notes.toLowerCase().includes(paymentsSearchTerm.toLowerCase()));
+
+    const matchesMethod =
+      paymentsMethodFilter === "all" || p.paymentMethod === paymentsMethodFilter;
+
+    return matchesSearch && matchesMethod;
+  });
+
+  useEffect(() => {
+    setPaymentsPage(1);
+  }, [paymentsSearchTerm, paymentsMethodFilter]);
+
+  const paginatedPayments = filteredPayments.slice(
     (paymentsPage - 1) * paymentsPageSize,
     paymentsPage * paymentsPageSize
   );
@@ -425,7 +529,7 @@ export function StudentPortal({
       {/* Tab 1: Coursework Submissions */}
       {activeTab === "assessments" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
                 Coursework Assignments
@@ -434,14 +538,62 @@ export function StudentPortal({
                 Upload deliverables in PDF or DOCX format. Resubmissions are allowed until the official deadline.
               </p>
             </div>
-            <Button size="sm" variant="outline" onClick={fetchStudentData}>
-              <RefreshCw className="w-3.5 h-3.5 mr-1 text-indigo-600 dark:text-indigo-400" />
-              Refresh
-            </Button>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search module or title..."
+                  value={assessmentSearchTerm}
+                  onChange={(e) => setAssessmentSearchTerm(e.target.value)}
+                  className="pl-8 pr-7 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-44 sm:w-56"
+                />
+                {assessmentSearchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => setAssessmentSearchTerm("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                <Filter className="w-3.5 h-3.5" />
+                <span>Status:</span>
+                <select
+                  value={assessmentStatusFilter}
+                  onChange={(e) => setAssessmentStatusFilter(e.target.value)}
+                  className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="all">All Deliverables</option>
+                  <option value="open">Open for Submission</option>
+                  <option value="passed">Deadline Passed</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="pending">Pending Upload</option>
+                </select>
+              </div>
+
+              <Button size="sm" variant="outline" onClick={fetchStudentData}>
+                <RefreshCw className="w-3.5 h-3.5 mr-1 text-indigo-600 dark:text-indigo-400" />
+                Refresh
+              </Button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {assessments.map((asm) => {
+          {assessments.length === 0 ? (
+            <Card className="p-8 text-center text-slate-400 text-xs italic">
+              No coursework assessments assigned to your programme.
+            </Card>
+          ) : filteredAssessments.length === 0 ? (
+            <Card className="p-8 text-center text-slate-400 text-xs italic">
+              No coursework assignments match your search or filter criteria.
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {paginatedAssessments.map((asm) => {
               const mySubmission = student.submissions?.find(
                 (s: any) => s.assessmentId === asm.id
               );
@@ -602,8 +754,19 @@ export function StudentPortal({
               );
             })}
           </div>
+          <Pagination
+            currentPage={assessmentsPage}
+            totalItems={filteredAssessments.length}
+            pageSize={assessmentsPageSize}
+            onPageChange={setAssessmentsPage}
+            onPageSizeChange={setAssessmentsPageSize}
+            pageSizeOptions={[6, 12, 24]}
+            itemLabel="assignments"
+          />
         </div>
       )}
+    </div>
+  )}
 
       {/* Tab 2: Official Marksheet */}
       {activeTab === "marksheet" && (
@@ -698,6 +861,51 @@ export function StudentPortal({
             </Card>
           ) : (
             <Card>
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <CardTitle className="text-sm">Ratified Assessment Outcomes</CardTitle>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Official modular performance records with credits and ratified award classifications.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search module or title..."
+                      value={gradesSearchTerm}
+                      onChange={(e) => setGradesSearchTerm(e.target.value)}
+                      className="pl-8 pr-7 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-44 sm:w-56"
+                    />
+                    {gradesSearchTerm && (
+                      <button
+                        type="button"
+                        onClick={() => setGradesSearchTerm("")}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                    <Filter className="w-3.5 h-3.5" />
+                    <span>Classification:</span>
+                    <select
+                      value={gradesClassificationFilter}
+                      onChange={(e) => setGradesClassificationFilter(e.target.value)}
+                      className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    >
+                      <option value="all">All Grades</option>
+                      <option value="DISTINCTION">Distinction (70%+)</option>
+                      <option value="MERIT">Merit (60-69%)</option>
+                      <option value="PASS">Pass (40-59%)</option>
+                      <option value="FAIL">Fail (&lt;40%)</option>
+                    </select>
+                  </div>
+                </div>
+              </CardHeader>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs sm:text-sm">
                   <thead className="bg-slate-50 dark:bg-slate-900/90 text-slate-600 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-white/[0.08]">
@@ -712,57 +920,65 @@ export function StudentPortal({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-                    {paginatedGrades.map((grade: any) => (
-                      <tr
-                        key={grade.id}
-                        className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03] transition-colors"
-                      >
-                        <td className="py-4 px-5 font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                          {grade.assessment?.moduleCode}
-                        </td>
-                        <td className="py-4 px-5">
-                          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/20">
-                            {grade.assessment?.credits || 15} Credits
-                          </span>
-                        </td>
-                        <td className="py-4 px-5 font-bold text-slate-900 dark:text-white">
-                          {grade.assessment?.title}
-                        </td>
-                        <td className="py-4 px-5">
-                          <span className="text-lg font-extrabold text-slate-900 dark:text-white">
-                            {grade.numericGrade}%
-                          </span>
-                        </td>
-                        <td className="py-4 px-5">
-                          <Badge
-                            variant={
-                              grade.classification === "DISTINCTION"
-                                ? "success"
-                                : grade.classification === "MERIT"
-                                ? "info"
-                                : grade.classification === "PASS"
-                                ? "warning"
-                                : "danger"
-                            }
-                            dot
-                          >
-                            {getClassificationLabel(grade.classification)}
-                          </Badge>
-                        </td>
-                        <td className="py-4 px-5 text-slate-600 dark:text-slate-300 italic max-w-xs text-xs">
-                          {grade.feedback || "Satisfactory academic performance."}
-                        </td>
-                        <td className="py-4 px-5 text-right text-slate-400 dark:text-slate-500 font-mono text-xs">
-                          {formatDate(grade.publishedAt)}
+                    {filteredGrades.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-10 text-center text-slate-400 italic text-xs">
+                          No marksheet grades match your search or classification filter.
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      paginatedGrades.map((grade: any) => (
+                        <tr
+                          key={grade.id}
+                          className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03] transition-colors"
+                        >
+                          <td className="py-4 px-5 font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                            {grade.assessment?.moduleCode}
+                          </td>
+                          <td className="py-4 px-5">
+                            <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/20">
+                              {grade.assessment?.credits || 15} Credits
+                            </span>
+                          </td>
+                          <td className="py-4 px-5 font-bold text-slate-900 dark:text-white">
+                            {grade.assessment?.title}
+                          </td>
+                          <td className="py-4 px-5">
+                            <span className="text-lg font-extrabold text-slate-900 dark:text-white">
+                              {grade.numericGrade}%
+                            </span>
+                          </td>
+                          <td className="py-4 px-5">
+                            <Badge
+                              variant={
+                                grade.classification === "DISTINCTION"
+                                  ? "success"
+                                  : grade.classification === "MERIT"
+                                  ? "info"
+                                  : grade.classification === "PASS"
+                                  ? "warning"
+                                  : "danger"
+                              }
+                              dot
+                            >
+                              {getClassificationLabel(grade.classification)}
+                            </Badge>
+                          </td>
+                          <td className="py-4 px-5 text-slate-600 dark:text-slate-300 italic max-w-xs text-xs">
+                            {grade.feedback || "Satisfactory academic performance."}
+                          </td>
+                          <td className="py-4 px-5 text-right text-slate-400 dark:text-slate-500 font-mono text-xs">
+                            {formatDate(grade.publishedAt)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
               <Pagination
                 currentPage={gradesPage}
-                totalItems={publishedGrades.length}
+                totalItems={filteredGrades.length}
                 pageSize={gradesPageSize}
                 onPageChange={setGradesPage}
                 onPageSizeChange={setGradesPageSize}
@@ -824,18 +1040,56 @@ export function StudentPortal({
 
           {/* Fee Billing Schedule & Scholarships */}
           <Card>
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <CardTitle className="text-sm">Fee Billing Schedule & Scholarships</CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-sm">Fee Billing Schedule & Scholarships</CardTitle>
+                  {student.fees?.some((f: any) => f.feeType === "INSTALMENT_TRANCHE") && (
+                    <Badge variant="purple" dot className="hidden sm:inline-flex">
+                      Instalment Plan Active
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   Itemized modular tuition tranches, lab levies, and institutional scholarship awards.
                 </p>
               </div>
-              {student.fees?.some((f: any) => f.feeType === "INSTALMENT_TRANCHE") && (
-                <Badge variant="purple" dot>
-                  3-Tranche Instalment Plan Active
-                </Badge>
-              )}
+              <div className="flex flex-wrap items-center gap-2.5">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search billing item..."
+                    value={feesSearchTerm}
+                    onChange={(e) => setFeesSearchTerm(e.target.value)}
+                    className="pl-8 pr-7 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-40 sm:w-52"
+                  />
+                  {feesSearchTerm && (
+                    <button
+                      type="button"
+                      onClick={() => setFeesSearchTerm("")}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <Filter className="w-3.5 h-3.5" />
+                  <span>Category:</span>
+                  <select
+                    value={feesCategoryFilter}
+                    onChange={(e) => setFeesCategoryFilter(e.target.value)}
+                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  >
+                    <option value="all">All Items</option>
+                    <option value="TUITION">Tuition Only</option>
+                    <option value="INSTALMENT">Instalments</option>
+                    <option value="SCHOLARSHIP">Scholarships / Waivers</option>
+                  </select>
+                </div>
+              </div>
             </CardHeader>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm">
@@ -848,50 +1102,64 @@ export function StudentPortal({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-                  {paginatedFees.map((fee: any) => (
-                    <tr key={fee.id} className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03]">
-                      <td className="py-3 px-5 font-semibold text-slate-900 dark:text-white">
-                        {fee.description}
-                      </td>
-                      <td className="py-3 px-5">
-                        <Badge
-                          variant={
-                            fee.amount < 0
-                              ? "success"
-                              : fee.feeType === "INSTALMENT_TRANCHE"
-                              ? "purple"
-                              : "secondary"
-                          }
-                        >
-                          {fee.amount < 0
-                            ? "SCHOLARSHIP / WAIVER"
-                            : fee.feeType === "INSTALMENT_TRANCHE"
-                            ? "INSTALMENT TRANCHE"
-                            : "STANDARD TUITION"}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-5 text-slate-600 dark:text-slate-400">
-                        {fee.amount < 0 ? "Credited to Ledger" : formatDate(fee.dueDate)}
-                      </td>
-                      <td
-                        className={`py-3 px-5 text-right font-extrabold font-mono ${
-                          fee.amount < 0
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-slate-900 dark:text-white"
-                        }`}
-                      >
-                        {fee.amount < 0
-                          ? `-${formatCurrency(Math.abs(fee.amount))}`
-                          : formatCurrency(fee.amount)}
+                  {studentFees.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="py-8 text-center text-slate-400 dark:text-slate-500">
+                        No billing items scheduled yet.
                       </td>
                     </tr>
-                  ))}
+                  ) : filteredFees.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="py-8 text-center text-slate-400 dark:text-slate-500">
+                        No billing items match your search or category filter.
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedFees.map((fee: any) => (
+                      <tr key={fee.id} className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03]">
+                        <td className="py-3 px-5 font-semibold text-slate-900 dark:text-white">
+                          {fee.description}
+                        </td>
+                        <td className="py-3 px-5">
+                          <Badge
+                            variant={
+                              fee.amount < 0
+                                ? "success"
+                                : fee.feeType === "INSTALMENT_TRANCHE"
+                                ? "purple"
+                                : "secondary"
+                            }
+                          >
+                            {fee.amount < 0
+                              ? "SCHOLARSHIP / WAIVER"
+                              : fee.feeType === "INSTALMENT_TRANCHE"
+                              ? "INSTALMENT TRANCHE"
+                              : "STANDARD TUITION"}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-5 text-slate-600 dark:text-slate-400">
+                          {fee.amount < 0 ? "Credited to Ledger" : formatDate(fee.dueDate)}
+                        </td>
+                        <td
+                          className={`py-3 px-5 text-right font-extrabold font-mono ${
+                            fee.amount < 0
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-slate-900 dark:text-white"
+                          }`}
+                        >
+                          {fee.amount < 0
+                            ? `-${formatCurrency(Math.abs(fee.amount))}`
+                            : formatCurrency(fee.amount)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
             <Pagination
               currentPage={feesPage}
-              totalItems={studentFees.length}
+              totalItems={filteredFees.length}
               pageSize={feesPageSize}
               onPageChange={setFeesPage}
               onPageSizeChange={setFeesPageSize}
@@ -902,8 +1170,49 @@ export function StudentPortal({
 
           {/* Transactions list */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Payment Receipts & History</CardTitle>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <CardTitle className="text-sm">Payment Receipts & History</CardTitle>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Verified payments received and credited to your institutional tuition account.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search ref or notes..."
+                    value={paymentsSearchTerm}
+                    onChange={(e) => setPaymentsSearchTerm(e.target.value)}
+                    className="pl-8 pr-7 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-40 sm:w-52"
+                  />
+                  {paymentsSearchTerm && (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentsSearchTerm("")}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <Filter className="w-3.5 h-3.5" />
+                  <span>Method:</span>
+                  <select
+                    value={paymentsMethodFilter}
+                    onChange={(e) => setPaymentsMethodFilter(e.target.value)}
+                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  >
+                    <option value="all">All Methods</option>
+                    {Array.from(new Set<string>(studentPayments.map((p: any) => p.paymentMethod).filter(Boolean))).map((method: string) => (
+                      <option key={method} value={method}>{method}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </CardHeader>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm">
@@ -918,10 +1227,16 @@ export function StudentPortal({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-                  {student.payments?.length === 0 ? (
+                  {studentPayments.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-8 text-center text-slate-400 dark:text-slate-500">
                         No payment records registered yet.
+                      </td>
+                    </tr>
+                  ) : filteredPayments.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-slate-400 dark:text-slate-500">
+                        No payment records match your search or method filter.
                       </td>
                     </tr>
                   ) : (
@@ -967,7 +1282,7 @@ export function StudentPortal({
             </div>
             <Pagination
               currentPage={paymentsPage}
-              totalItems={studentPayments.length}
+              totalItems={filteredPayments.length}
               pageSize={paymentsPageSize}
               onPageChange={setPaymentsPage}
               onPageSizeChange={setPaymentsPageSize}

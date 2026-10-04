@@ -18,6 +18,7 @@ import {
   Sparkles,
   Award,
   Split,
+  X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -277,13 +278,29 @@ export function FeesPaymentsWorkflow({
 
   const currentPayingStudent = students.find((s) => s.id === selectedStudentForPay);
 
+  // Table 1: Student Accounts Filters & Search
+  const [accountBalanceFilter, setAccountBalanceFilter] = useState("all");
+  const [accountProgrammeFilter, setAccountProgrammeFilter] = useState("all");
+
   const filteredStudents = students.filter((s) => {
     const matchesSearch =
       searchTerm === "" ||
       s.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.studentId.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesOverdue = !showOverdueOnly || s.isOverdue;
-    return matchesSearch && matchesOverdue;
+
+    const balance = Number(s.balance ?? s.financialSummary?.balance ?? 0);
+    const matchesBalance =
+      accountBalanceFilter === "all" ||
+      (accountBalanceFilter === "overdue" && s.isOverdue) ||
+      (accountBalanceFilter === "outstanding" && balance > 0) ||
+      (accountBalanceFilter === "settled" && balance <= 0);
+
+    const matchesProgramme =
+      accountProgrammeFilter === "all" ||
+      s.programmeId === accountProgrammeFilter ||
+      s.programme?.code === accountProgrammeFilter;
+
+    return matchesSearch && matchesBalance && matchesProgramme;
   });
 
   const [studentsCurrentPage, setStudentsCurrentPage] = useState(1);
@@ -291,17 +308,39 @@ export function FeesPaymentsWorkflow({
 
   useEffect(() => {
     setStudentsCurrentPage(1);
-  }, [searchTerm, showOverdueOnly]);
+  }, [searchTerm, accountBalanceFilter, accountProgrammeFilter]);
 
   const paginatedStudents = filteredStudents.slice(
     (studentsCurrentPage - 1) * studentsPageSize,
     studentsCurrentPage * studentsPageSize
   );
 
+  // Table 2: Transactions Ledger Filters & Search
+  const [txSearchTerm, setTxSearchTerm] = useState("");
+  const [txMethodFilter, setTxMethodFilter] = useState("all");
+
+  const filteredPayments = payments.filter((p) => {
+    const matchesSearch =
+      txSearchTerm === "" ||
+      p.referenceNumber.toLowerCase().includes(txSearchTerm.toLowerCase()) ||
+      p.student?.fullName?.toLowerCase().includes(txSearchTerm.toLowerCase()) ||
+      p.student?.studentId?.toLowerCase().includes(txSearchTerm.toLowerCase()) ||
+      (p.notes && p.notes.toLowerCase().includes(txSearchTerm.toLowerCase()));
+
+    const matchesMethod =
+      txMethodFilter === "all" || p.paymentMethod === txMethodFilter;
+
+    return matchesSearch && matchesMethod;
+  });
+
   const [paymentsCurrentPage, setPaymentsCurrentPage] = useState(1);
   const [paymentsPageSize, setPaymentsPageSize] = useState(10);
 
-  const paginatedPayments = payments.slice(
+  useEffect(() => {
+    setPaymentsCurrentPage(1);
+  }, [txSearchTerm, txMethodFilter]);
+
+  const paginatedPayments = filteredPayments.slice(
     (paymentsCurrentPage - 1) * paymentsPageSize,
     paymentsCurrentPage * paymentsPageSize
   );
@@ -409,29 +448,41 @@ export function FeesPaymentsWorkflow({
               Live balances computed automatically from assigned fees minus recorded payments.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Filter student..."
+                placeholder="Search candidate name or ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="pl-8 pr-7 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-44 sm:w-56"
               />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
             </div>
-            <button
-              type="button"
-              onClick={() => setShowOverdueOnly(!showOverdueOnly)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-                showOverdueOnly
-                  ? "bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-500/20 dark:border-rose-500/40 dark:text-rose-300"
-                  : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 dark:bg-slate-900/60 dark:border-white/10 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}
-            >
-              <AlertTriangle className="w-3 h-3 text-rose-500 dark:text-rose-400" />
-              <span>Overdue Only</span>
-            </button>
+
+            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+              <Filter className="w-3.5 h-3.5" />
+              <span>Status:</span>
+              <select
+                value={accountBalanceFilter}
+                onChange={(e) => setAccountBalanceFilter(e.target.value)}
+                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="all">All Accounts</option>
+                <option value="overdue">Overdue Only</option>
+                <option value="outstanding">Outstanding Balance</option>
+                <option value="settled">Fully Settled</option>
+              </select>
+            </div>
           </div>
         </CardHeader>
         <div className="overflow-x-auto">
@@ -449,7 +500,14 @@ export function FeesPaymentsWorkflow({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-              {paginatedStudents.map((s) => (
+              {filteredStudents.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-400 italic text-xs">
+                    No student accounts matched your search or status filter.
+                  </td>
+                </tr>
+              ) : (
+                paginatedStudents.map((s) => (
                 <tr
                   key={s.id}
                   className={`hover:bg-slate-50/80 dark:hover:bg-white/[0.03] transition-colors ${
@@ -549,7 +607,7 @@ export function FeesPaymentsWorkflow({
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>
@@ -565,11 +623,49 @@ export function FeesPaymentsWorkflow({
 
       {/* Transaction History Ledger */}
       <Card>
-        <CardHeader>
-          <CardTitle>Recorded Payment Transactions</CardTitle>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Verified ledger of all receipted tuition fees with unique transaction identifiers.
-          </p>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <CardTitle>Recorded Payment Transactions</CardTitle>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Verified ledger of all receipted tuition fees with unique transaction identifiers.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search ref, student, note..."
+                value={txSearchTerm}
+                onChange={(e) => setTxSearchTerm(e.target.value)}
+                className="pl-8 pr-7 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-44 sm:w-56"
+              />
+              {txSearchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setTxSearchTerm("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+              <Filter className="w-3.5 h-3.5" />
+              <span>Method:</span>
+              <select
+                value={txMethodFilter}
+                onChange={(e) => setTxMethodFilter(e.target.value)}
+                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="all">All Methods</option>
+                {Array.from(new Set<string>(payments.map((p) => p.paymentMethod).filter(Boolean))).map((method: string) => (
+                  <option key={method} value={method}>{method}</option>
+                ))}
+              </select>
+            </div>
+          </div>
         </CardHeader>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm">
@@ -581,19 +677,26 @@ export function FeesPaymentsWorkflow({
                 <th className="py-3.5 px-5">Payment Method</th>
                 <th className="py-3.5 px-5">Notes / Purpose</th>
                 <th className="py-3.5 px-5 text-right">Amount</th>
+                <th className="py-3.5 px-5 text-right">Receipt</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
               {isLoadingPayments ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-slate-400">
+                  <td colSpan={7} className="py-10 text-center text-slate-400">
                     Loading transactions...
                   </td>
                 </tr>
               ) : payments.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-slate-500 dark:text-slate-400">
+                  <td colSpan={7} className="py-10 text-center text-slate-500 dark:text-slate-400">
                     No payment transactions recorded yet.
+                  </td>
+                </tr>
+              ) : filteredPayments.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-10 text-center text-slate-500 dark:text-slate-400">
+                    No payment transactions match your search or filter.
                   </td>
                 </tr>
               ) : (
@@ -650,7 +753,7 @@ export function FeesPaymentsWorkflow({
         </div>
         <Pagination
           currentPage={paymentsCurrentPage}
-          totalItems={payments.length}
+          totalItems={filteredPayments.length}
           pageSize={paymentsPageSize}
           onPageChange={setPaymentsCurrentPage}
           onPageSizeChange={setPaymentsPageSize}
