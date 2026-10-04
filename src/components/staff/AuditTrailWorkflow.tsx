@@ -27,7 +27,7 @@ interface AuditTrailWorkflowProps {
 
 export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}) {
   const [logs, setLogs] = useState<any[]>(initialLogs || []);
-  const [isLoading, setIsLoading] = useState(!initialLogs || initialLogs.length === 0);
+  const [isLoading, setIsLoading] = useState(initialLogs === undefined);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedActionFilter, setSelectedActionFilter] = useState("ALL");
 
@@ -47,7 +47,10 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
   };
 
   useEffect(() => {
-    if (!initialLogs || initialLogs.length === 0) {
+    if (initialLogs !== undefined) {
+      setLogs(initialLogs);
+      setIsLoading(false);
+    } else {
       fetchLogs();
     }
   }, [initialLogs]);

@@ -347,3 +347,92 @@ export async function getAssessmentsFull() {
     return [];
   }
 }
+
+/**
+ * Server-side fetch of Payments with Student relations
+ */
+export async function getPaymentsFull() {
+  try {
+    return await prisma.payment.findMany({
+      orderBy: { paymentDate: "desc" },
+      include: {
+        student: {
+          select: {
+            id: true,
+            studentId: true,
+            fullName: true,
+            email: true,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching payments on server:", error);
+    return [];
+  }
+}
+
+/**
+ * Server-side fetch of complete Student Details for StudentPortal
+ */
+export async function getStudentDetail(studentId: string) {
+  try {
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      include: {
+        programme: true,
+        fees: {
+          orderBy: { createdAt: "desc" },
+        },
+        payments: {
+          orderBy: { paymentDate: "desc" },
+        },
+        submissions: {
+          include: {
+            assessment: true,
+          },
+          orderBy: { submittedAt: "desc" },
+        },
+        grades: {
+          include: {
+            assessment: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        extenuatingCircumstances: {
+          include: {
+            assessment: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    });
+
+    if (!student) return null;
+
+    const totalFees = student.fees.reduce((sum, f) => sum + f.amount, 0);
+    const totalPaid = student.payments.reduce((sum, p) => sum + p.amount, 0);
+    const balance = Math.max(0, totalFees - totalPaid);
+
+    const now = new Date();
+    const isOverdue = student.fees.some(
+      (f) => new Date(f.dueDate) < now && balance > 0
+    );
+
+    const academicStanding = calculateAcademicStanding(student.grades, true);
+    const internalAcademicStanding = calculateAcademicStanding(student.grades, false);
+
+    return {
+      ...student,
+      totalFees,
+      totalPaid,
+      balance,
+      isOverdue,
+      academicStanding,
+      internalAcademicStanding,
+    };
+  } catch (error) {
+    console.error("Error fetching student details on server:", error);
+    return null;
+  }
+}

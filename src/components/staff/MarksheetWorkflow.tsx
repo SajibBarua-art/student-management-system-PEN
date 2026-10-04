@@ -32,16 +32,24 @@ import { formatDateTime } from "@/lib/formatters";
 interface MarksheetWorkflowProps {
   initialAssessmentId?: string | null;
   onRefreshGlobalStats: () => void;
+  initialAssessments?: any[];
+  initialStudents?: any[];
 }
 
 export function MarksheetWorkflow({
   initialAssessmentId,
   onRefreshGlobalStats,
+  initialAssessments,
+  initialStudents,
 }: MarksheetWorkflowProps) {
-  const [assessments, setAssessments] = useState<any[]>([]);
-  const [students, setStudents] = useState<any[]>([]);
-  const [selectedAssessmentId, setSelectedAssessmentId] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [assessments, setAssessments] = useState<any[]>(initialAssessments || []);
+  const [students, setStudents] = useState<any[]>(initialStudents || []);
+  const [selectedAssessmentId, setSelectedAssessmentId] = useState<string>(
+    initialAssessmentId || (initialAssessments && initialAssessments.length > 0 ? initialAssessments[0].id : "")
+  );
+  const [isLoading, setIsLoading] = useState(
+    !initialAssessments || initialAssessments.length === 0 || !initialStudents || initialStudents.length === 0
+  );
 
   // Grading states: studentId -> { numericGrade, feedback, isPublished, classification }
   const [gradingRows, setGradingRows] = useState<
@@ -89,8 +97,18 @@ export function MarksheetWorkflow({
   };
 
   useEffect(() => {
+    if (initialAssessments !== undefined && initialStudents !== undefined) {
+      setAssessments(initialAssessments);
+      setStudents(initialStudents);
+      const activeAsmId =
+        initialAssessmentId ||
+        (initialAssessments.length > 0 ? initialAssessments[0].id : "");
+      setSelectedAssessmentId(activeAsmId);
+      setIsLoading(false);
+      return;
+    }
     loadData();
-  }, [initialAssessmentId]);
+  }, [initialAssessmentId, initialAssessments, initialStudents]);
 
   useEffect(() => {
     if (!selectedAssessmentId) return;

@@ -112,7 +112,7 @@ export function AssessmentsWorkflow({
   };
 
   useEffect(() => {
-    if (initialAssessments && initialAssessments.length > 0) {
+    if (initialAssessments !== undefined) {
       setAssessments(initialAssessments);
       setIsLoading(false);
     } else {

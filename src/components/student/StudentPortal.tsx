@@ -43,13 +43,19 @@ import { calculateAcademicStanding } from "@/lib/academic-engine";
 
 interface StudentPortalProps {
   studentId: string;
+  initialStudent?: any | null;
+  initialAssessments?: any[];
 }
 
-export function StudentPortal({ studentId }: StudentPortalProps) {
-  const [student, setStudent] = useState<any | null>(null);
-  const [assessments, setAssessments] = useState<any[]>([]);
+export function StudentPortal({
+  studentId,
+  initialStudent = null,
+  initialAssessments = [],
+}: StudentPortalProps) {
+  const [student, setStudent] = useState<any | null>(initialStudent);
+  const [assessments, setAssessments] = useState<any[]>(initialAssessments);
   const [activeTab, setActiveTab] = useState<"finance" | "assessments" | "marksheet">("assessments");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialStudent);
   const [portalError, setPortalError] = useState<string | null>(null);
 
   // Sync subtab state on mount and when browser history navigates
@@ -189,10 +195,18 @@ export function StudentPortal({ studentId }: StudentPortalProps) {
   };
 
   useEffect(() => {
+    if (initialStudent && initialStudent.id === studentId) {
+      setStudent(initialStudent);
+      if (initialAssessments && initialAssessments.length > 0) {
+        setAssessments(initialAssessments);
+      }
+      setIsLoading(false);
+      return;
+    }
     if (studentId) {
       fetchStudentData();
     }
-  }, [studentId]);
+  }, [studentId, initialStudent, initialAssessments]);
 
   const handleOpenUploadModal = (asm: any) => {
     setActiveAssessmentForUpload(asm);

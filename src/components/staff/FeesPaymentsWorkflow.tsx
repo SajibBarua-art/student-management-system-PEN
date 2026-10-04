@@ -34,6 +34,7 @@ interface FeesPaymentsWorkflowProps {
   isPaymentModalOpen: boolean;
   setIsPaymentModalOpen: (open: boolean) => void;
   preselectedStudentId?: string | null;
+  initialPayments?: any[];
 }
 
 export function FeesPaymentsWorkflow({
@@ -42,9 +43,10 @@ export function FeesPaymentsWorkflow({
   isPaymentModalOpen,
   setIsPaymentModalOpen,
   preselectedStudentId,
+  initialPayments,
 }: FeesPaymentsWorkflowProps) {
-  const [payments, setPayments] = useState<any[]>([]);
-  const [isLoadingPayments, setIsLoadingPayments] = useState(false);
+  const [payments, setPayments] = useState<any[]>(initialPayments || []);
+  const [isLoadingPayments, setIsLoadingPayments] = useState(!initialPayments || initialPayments.length === 0);
   const [selectedStudentForPay, setSelectedStudentForPay] = useState<string>(
     preselectedStudentId || (students[0]?.id ?? "")
   );
@@ -126,8 +128,13 @@ export function FeesPaymentsWorkflow({
   };
 
   useEffect(() => {
-    fetchPayments();
-  }, []);
+    if (initialPayments !== undefined) {
+      setPayments(initialPayments);
+      setIsLoadingPayments(false);
+    } else {
+      fetchPayments();
+    }
+  }, [initialPayments]);
 
   const openNewPaymentModal = (studentId?: string) => {
     if (studentId) {

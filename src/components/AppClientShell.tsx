@@ -23,6 +23,8 @@ interface AppClientShellProps {
   initialProgrammes?: any[];
   initialAuditLogs?: any[];
   initialAssessments?: any[];
+  initialPayments?: any[];
+  initialStudentDetail?: any | null;
 }
 
 export function AppClientShell({
@@ -36,16 +38,22 @@ export function AppClientShell({
   initialProgrammes = [],
   initialAuditLogs = [],
   initialAssessments = [],
+  initialPayments = [],
+  initialStudentDetail = null,
 }: AppClientShellProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isNavigating, startTransition] = React.useTransition();
 
   const [role, setRole] = useState<"staff" | "student">(initialRole);
   const [persona, setPersona] = useState<InstitutionalPersona>(initialPersona);
-  const [activeStaffTab, setActiveStaffTab] = useState<string>(initialTab);
+  const [pendingTab, setPendingTab] = useState<string | null>(null);
   const [activeStudentId, setActiveStudentId] = useState<string | null>(
     initialStudentId || (studentPersonas.length > 0 ? studentPersonas[0].id : null)
   );
+
+  // The active staff tab is driven by pending transition or server initialTab
+  const activeStaffTab = pendingTab || initialTab;
 
   // Data states initialized from server-rendered SSR payloads
   const [students, setStudents] = useState<any[]>(initialStudents);
@@ -59,15 +67,19 @@ export function AppClientShell({
   const [preselectedPayStudentId, setPreselectedPayStudentId] = useState<string | null>(null);
   const [gradingAssessmentId, setGradingAssessmentId] = useState<string | null>(null);
 
+  // Clear pending tab once server render completes
+  useEffect(() => {
+    setPendingTab(null);
+  }, [initialTab]);
+
   // Sync state if server route parameters change (e.g., via Next.js RSC navigation or Back/Forward)
   useEffect(() => {
     if (initialRole !== role) setRole(initialRole);
     if (initialPersona !== persona) setPersona(initialPersona);
-    if (initialTab !== activeStaffTab) setActiveStaffTab(initialTab);
     if (initialStudentId && initialStudentId !== activeStudentId) {
       setActiveStudentId(initialStudentId);
     }
-  }, [initialRole, initialPersona, initialTab, initialStudentId]);
+  }, [initialRole, initialPersona, initialStudentId]);
 
   // Sync server data updates if passed from fresh server navigation
   useEffect(() => {
@@ -135,27 +147,35 @@ export function AppClientShell({
 
   // Tab change handler
   const handleStaffTabChange = (newTab: string) => {
-    setActiveStaffTab(newTab);
-    updateUrl(role, newTab, persona, activeStudentId);
+    setPendingTab(newTab);
+    startTransition(() => {
+      updateUrl(role, newTab, persona, activeStudentId);
+    });
   };
 
   // Student selection handler
   const handleStudentChange = (newStudentId: string) => {
     setActiveStudentId(newStudentId);
-    updateUrl(role, activeStaffTab, persona, newStudentId);
+    startTransition(() => {
+      updateUrl(role, activeStaffTab, persona, newStudentId);
+    });
   };
 
   // Navigate to Marksheet with selected assessment
   const handleNavigateToGrading = (assessmentId: string) => {
     setGradingAssessmentId(assessmentId);
-    setActiveStaffTab("marksheet");
-    updateUrl(role, "marksheet", persona, activeStudentId);
+    setPendingTab("marksheet");
+    startTransition(() => {
+      updateUrl(role, "marksheet", persona, activeStudentId);
+    });
   };
 
   // Open enrol modal for new student
   const handleOpenEnrolModal = () => {
-    setActiveStaffTab("enrolment");
-    updateUrl(role, "enrolment", persona, activeStudentId);
+    setPendingTab("enrolment");
+    startTransition(() => {
+      updateUrl(role, "enrolment", persona, activeStudentId);
+    });
     setIsEnrolModalOpen(true);
   };
 
@@ -166,8 +186,10 @@ export function AppClientShell({
     } else {
       setPreselectedPayStudentId(null);
     }
-    setActiveStaffTab("fees");
-    updateUrl(role, "fees", persona, activeStudentId);
+    setPendingTab("fees");
+    startTransition(() => {
+      updateUrl(role, "fees", persona, activeStudentId);
+    });
     setIsPaymentModalOpen(true);
   };
 
@@ -188,16 +210,18 @@ export function AppClientShell({
         (activeStaffTab === "fees" || activeStaffTab === "enrolment")
       ) {
         nextTab = "assessments";
-        setActiveStaffTab("assessments");
+        setPendingTab("assessments");
       } else if (
         newPersona === "BURSAR_FINANCE" &&
         (activeStaffTab === "assessments" || activeStaffTab === "marksheet")
       ) {
         nextTab = "fees";
-        setActiveStaffTab("fees");
+        setPendingTab("fees");
       }
     }
-    updateUrl(nextRole, nextTab, newPersona, activeStudentId);
+    startTransition(() => {
+      updateUrl(nextRole, nextTab, newPersona, activeStudentId);
+    });
   };
 
   const handleRoleChange = (newRole: "staff" | "student") => {
@@ -212,11 +236,18 @@ export function AppClientShell({
         setPersona("REGISTRY_ADMIN");
       }
     }
-    updateUrl(newRole, activeStaffTab, nextPersona, activeStudentId);
+    startTransition(() => {
+      updateUrl(newRole, activeStaffTab, nextPersona, activeStudentId);
+    });
   };
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Top Transition Progress Bar */}
+      {isNavigating && (
+        <div className="fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-400 z-50 animate-pulse" />
+      )}
+
       {/* Top Navigation Bar with Persona & Role Switcher */}
       <Navbar
         role={role}
@@ -234,7 +265,7 @@ export function AppClientShell({
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-5 lg:px-6 py-5 sm:py-6">
         {role === "staff" ? (
           <div>
-            {activeStaffTab === "overview" && (
+            {initialTab === "overview" && (
               <OverviewDashboard
                 stats={stats}
                 persona={persona}
@@ -244,10 +275,10 @@ export function AppClientShell({
               />
             )}
 
-            {activeStaffTab === "enrolment" && (
+            {initialTab === "enrolment" && (
               <EnrolmentWorkflow
-                students={students}
-                programmes={programmes}
+                students={initialStudents.length > 0 ? initialStudents : students}
+                programmes={initialProgrammes.length > 0 ? initialProgrammes : programmes}
                 isLoading={isLoading}
                 onRefresh={refreshClientData}
                 onOpenPaymentModal={handleOpenPaymentModal}
@@ -256,39 +287,46 @@ export function AppClientShell({
               />
             )}
 
-            {activeStaffTab === "fees" && (
+            {initialTab === "fees" && (
               <FeesPaymentsWorkflow
-                students={students}
+                students={initialStudents.length > 0 ? initialStudents : students}
                 onRefresh={refreshClientData}
                 isPaymentModalOpen={isPaymentModalOpen}
                 setIsPaymentModalOpen={setIsPaymentModalOpen}
                 preselectedStudentId={preselectedPayStudentId}
+                initialPayments={initialPayments}
               />
             )}
 
-            {activeStaffTab === "assessments" && (
+            {initialTab === "assessments" && (
               <AssessmentsWorkflow
-                programmes={programmes}
+                programmes={initialProgrammes.length > 0 ? initialProgrammes : programmes}
                 onNavigateToGrading={handleNavigateToGrading}
                 initialAssessments={initialAssessments}
               />
             )}
 
-            {activeStaffTab === "marksheet" && (
+            {initialTab === "marksheet" && (
               <MarksheetWorkflow
                 initialAssessmentId={gradingAssessmentId}
                 onRefreshGlobalStats={refreshClientData}
+                initialAssessments={initialAssessments}
+                initialStudents={initialStudents.length > 0 ? initialStudents : students}
               />
             )}
 
-            {activeStaffTab === "audit" && (
+            {initialTab === "audit" && (
               <AuditTrailWorkflow initialLogs={initialAuditLogs} />
             )}
           </div>
         ) : (
           <div>
             {activeStudentId ? (
-              <StudentPortal studentId={activeStudentId} />
+              <StudentPortal
+                studentId={activeStudentId}
+                initialStudent={initialStudentDetail}
+                initialAssessments={initialAssessments}
+              />
             ) : (
               <div className="py-20 text-center text-zinc-500">
                 <p>No active students found in the registry.</p>
