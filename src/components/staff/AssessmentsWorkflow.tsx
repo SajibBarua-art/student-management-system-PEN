@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { formatDate, formatDateTime, isPastDate } from "@/lib/formatters";
+import { Pagination } from "@/components/ui/pagination";
 
 interface AssessmentsWorkflowProps {
   programmes: any[];
@@ -57,6 +58,14 @@ export function AssessmentsWorkflow({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Pagination for Assessments Grid
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+  const paginatedAssessments = assessments.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const fetchAssessments = async () => {
     setIsLoading(true);
@@ -196,108 +205,121 @@ export function AssessmentsWorkflow({
           </p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {assessments.map((asm) => {
-            const hasPassed = isPastDate(asm.deadline);
-            const lateCount = asm.stats.lateSubmissions;
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {paginatedAssessments.map((asm) => {
+              const hasPassed = isPastDate(asm.deadline);
+              const lateCount = asm.stats.lateSubmissions;
 
-            return (
-              <Card
-                key={asm.id}
-                className="flex flex-col justify-between"
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/20">
-                        {asm.moduleCode}
-                      </span>
-                      <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/20">
-                        {asm.credits || 15} Credits
-                      </span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{asm.academicYear}</span>
+              return (
+                <Card
+                  key={asm.id}
+                  className="flex flex-col justify-between"
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/20">
+                          {asm.moduleCode}
+                        </span>
+                        <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/20">
+                          {asm.credits || 15} Credits
+                        </span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{asm.academicYear}</span>
+                      </div>
+                      {hasPassed ? (
+                        <Badge variant="secondary">Deadline Passed</Badge>
+                      ) : (
+                        <Badge variant="success" dot>Active / Open</Badge>
+                      )}
                     </div>
-                    {hasPassed ? (
-                      <Badge variant="secondary">Deadline Passed</Badge>
-                    ) : (
-                      <Badge variant="success" dot>Active / Open</Badge>
+                    <CardTitle className="text-base sm:text-lg mt-3 text-slate-900 dark:text-white">{asm.title}</CardTitle>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{asm.moduleName}</p>
+                  </CardHeader>
+
+                  <CardContent className="py-3 text-xs space-y-3">
+                    {asm.description && (
+                      <p className="text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                        {asm.description}
+                      </p>
                     )}
-                  </div>
-                  <CardTitle className="text-base sm:text-lg mt-3 text-slate-900 dark:text-white">{asm.title}</CardTitle>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{asm.moduleName}</p>
-                </CardHeader>
 
-                <CardContent className="py-3 text-xs space-y-3">
-                  {asm.description && (
-                    <p className="text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
-                      {asm.description}
-                    </p>
-                  )}
-
-                  <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium bg-slate-100/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200 dark:border-white/[0.04]">
-                    <Clock className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    <span>Official Deadline: {formatDateTime(asm.deadline)}</span>
-                  </div>
-
-                  {/* Submission Statistics Bar */}
-                  <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-white/[0.06] text-center">
-                    <div>
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">
-                        Submissions
-                      </span>
-                      <span className="font-extrabold text-base text-slate-900 dark:text-white">
-                        {asm.stats.totalSubmissions}
-                      </span>
+                    <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium bg-slate-100/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200 dark:border-white/[0.04]">
+                      <Clock className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                      <span>Official Deadline: {formatDateTime(asm.deadline)}</span>
                     </div>
-                    <div>
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">
-                        Late Flagged
-                      </span>
-                      <span
-                        className={`font-extrabold text-base ${
-                          lateCount > 0 ? "text-amber-500 dark:text-amber-400" : "text-slate-400 dark:text-slate-500"
-                        }`}
-                      >
-                        {lateCount}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">
-                        Graded
-                      </span>
-                      <span className="font-extrabold text-base text-emerald-600 dark:text-emerald-400">
-                        {asm.stats.gradedCount}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
 
-                <div className="p-4 sm:p-5 pt-0 flex items-center justify-between gap-2 border-t border-slate-200 dark:border-white/[0.04]">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedAssessmentForSubmissions(asm);
-                      setIsSubmissionsModalOpen(true);
-                    }}
-                    className="text-xs"
-                  >
-                    <Users className="w-3.5 h-3.5 mr-1.5" />
-                    Inspect Uploads ({asm.submissions.length})
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => onNavigateToGrading(asm.id)}
-                    variant="gradient"
-                    className="text-xs"
-                  >
-                    <Award className="w-3.5 h-3.5 mr-1.5" />
-                    Grade Marksheet
-                  </Button>
-                </div>
-              </Card>
-            );
-          })}
+                    {/* Submission Statistics Bar */}
+                    <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-white/[0.06] text-center">
+                      <div>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">
+                          Submissions
+                        </span>
+                        <span className="font-extrabold text-base text-slate-900 dark:text-white">
+                          {asm.stats.totalSubmissions}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">
+                          Late Flagged
+                        </span>
+                        <span
+                          className={`font-extrabold text-base ${
+                            lateCount > 0 ? "text-amber-500 dark:text-amber-400" : "text-slate-400 dark:text-slate-500"
+                          }`}
+                        >
+                          {lateCount}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">
+                          Graded
+                        </span>
+                        <span className="font-extrabold text-base text-emerald-600 dark:text-emerald-400">
+                          {asm.stats.gradedCount}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+
+                  <div className="p-4 sm:p-5 pt-0 flex items-center justify-between gap-2 border-t border-slate-200 dark:border-white/[0.04]">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedAssessmentForSubmissions(asm);
+                        setIsSubmissionsModalOpen(true);
+                      }}
+                      className="text-xs"
+                    >
+                      <Users className="w-3.5 h-3.5 mr-1.5" />
+                      Inspect Uploads ({asm.submissions.length})
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => onNavigateToGrading(asm.id)}
+                      variant="gradient"
+                      className="text-xs"
+                    >
+                      <Award className="w-3.5 h-3.5 mr-1.5" />
+                      Grade Marksheet
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+          <Card>
+            <Pagination
+              currentPage={currentPage}
+              totalItems={assessments.length}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+              pageSizeOptions={[6, 12, 24]}
+              itemLabel="assessments"
+            />
+          </Card>
         </div>
       )}
 

@@ -28,6 +28,7 @@ import {
 } from "@/lib/grade-classification";
 import { calculateLatePenalty } from "@/lib/academic-engine";
 import { formatDateTime } from "@/lib/formatters";
+import { Pagination } from "@/components/ui/pagination";
 
 interface MarksheetWorkflowProps {
   initialAssessmentId?: string | null;
@@ -283,6 +284,18 @@ export function MarksheetWorkflow({
 
   const currentAssessment = assessments.find((a) => a.id === selectedAssessmentId);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedAssessmentId]);
+
+  const paginatedStudents = students.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   return (
     <div className="space-y-6">
       {/* Workflow Header */}
@@ -405,7 +418,7 @@ export function MarksheetWorkflow({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-              {students.map((student) => {
+              {paginatedStudents.map((student) => {
                 const sub = currentAssessment?.submissions?.find(
                   (s: any) => s.studentId === student.id
                 );
@@ -626,6 +639,14 @@ export function MarksheetWorkflow({
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={students.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="candidates"
+        />
       </Card>
     </div>
   );

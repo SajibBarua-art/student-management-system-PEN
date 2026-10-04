@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Filter,
@@ -25,6 +25,7 @@ import { Modal } from "@/components/ui/modal";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { calculateAcademicStanding } from "@/lib/academic-engine";
 import { OfficialTranscriptModal } from "@/components/documents/OfficialTranscriptModal";
+import { Pagination } from "@/components/ui/pagination";
 
 interface EnrolmentWorkflowProps {
   students: any[];
@@ -88,6 +89,18 @@ export function EnrolmentWorkflow({
 
     return matchesSearch && matchesProgramme && matchesStatus && matchesOverdue;
   });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedProgramme, selectedStatus, overdueOnly]);
+
+  const paginatedStudents = filteredStudents.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -276,7 +289,7 @@ export function EnrolmentWorkflow({
                   </td>
                 </tr>
               ) : (
-                filteredStudents.map((student) => {
+                paginatedStudents.map((student) => {
                   const initials = student.fullName
                     .split(" ")
                     .map((n: string) => n[0])
@@ -396,6 +409,14 @@ export function EnrolmentWorkflow({
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredStudents.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="students"
+        />
       </Card>
 
       {/* Enrol New Student Modal */}

@@ -29,6 +29,7 @@ import { Modal } from "@/components/ui/modal";
 import { Alert } from "@/components/ui/alert";
 import { OfficialTranscriptModal } from "@/components/documents/OfficialTranscriptModal";
 import { FeeReceiptModal } from "@/components/documents/FeeReceiptModal";
+import { Pagination } from "@/components/ui/pagination";
 import {
   formatCurrency,
   formatDate,
@@ -290,6 +291,30 @@ export function StudentPortal({
   const publishedGrades = student.grades?.filter((g: any) => g.isPublished) || [];
   const withheldGradesCount = (student.grades?.length || 0) - publishedGrades.length;
   const academicStanding = student.academicStanding || calculateAcademicStanding(student.grades || [], true);
+
+  // Pagination states for all Student Portal tables
+  const [gradesPage, setGradesPage] = useState(1);
+  const [gradesPageSize, setGradesPageSize] = useState(5);
+  const paginatedGrades = publishedGrades.slice(
+    (gradesPage - 1) * gradesPageSize,
+    gradesPage * gradesPageSize
+  );
+
+  const [feesPage, setFeesPage] = useState(1);
+  const [feesPageSize, setFeesPageSize] = useState(5);
+  const studentFees = student.fees || [];
+  const paginatedFees = studentFees.slice(
+    (feesPage - 1) * feesPageSize,
+    feesPage * feesPageSize
+  );
+
+  const [paymentsPage, setPaymentsPage] = useState(1);
+  const [paymentsPageSize, setPaymentsPageSize] = useState(5);
+  const studentPayments = student.payments || [];
+  const paginatedPayments = studentPayments.slice(
+    (paymentsPage - 1) * paymentsPageSize,
+    paymentsPage * paymentsPageSize
+  );
 
   return (
     <div className="space-y-6">
@@ -687,7 +712,7 @@ export function StudentPortal({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-                    {publishedGrades.map((grade: any) => (
+                    {paginatedGrades.map((grade: any) => (
                       <tr
                         key={grade.id}
                         className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03] transition-colors"
@@ -735,6 +760,15 @@ export function StudentPortal({
                   </tbody>
                 </table>
               </div>
+              <Pagination
+                currentPage={gradesPage}
+                totalItems={publishedGrades.length}
+                pageSize={gradesPageSize}
+                onPageChange={setGradesPage}
+                onPageSizeChange={setGradesPageSize}
+                pageSizeOptions={[5, 10, 20]}
+                itemLabel="grades"
+              />
             </Card>
           )}
         </div>
@@ -814,7 +848,7 @@ export function StudentPortal({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-                  {student.fees?.map((fee: any) => (
+                  {paginatedFees.map((fee: any) => (
                     <tr key={fee.id} className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03]">
                       <td className="py-3 px-5 font-semibold text-slate-900 dark:text-white">
                         {fee.description}
@@ -855,6 +889,15 @@ export function StudentPortal({
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={feesPage}
+              totalItems={studentFees.length}
+              pageSize={feesPageSize}
+              onPageChange={setFeesPage}
+              onPageSizeChange={setFeesPageSize}
+              pageSizeOptions={[5, 10, 20]}
+              itemLabel="billing items"
+            />
           </Card>
 
           {/* Transactions list */}
@@ -882,7 +925,7 @@ export function StudentPortal({
                       </td>
                     </tr>
                   ) : (
-                    student.payments?.map((p: any) => (
+                    paginatedPayments.map((p: any) => (
                       <tr key={p.id} className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03]">
                         <td className="py-3.5 px-5 font-mono font-bold text-indigo-600 dark:text-indigo-300">
                           {p.referenceNumber}
@@ -922,6 +965,15 @@ export function StudentPortal({
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={paymentsPage}
+              totalItems={studentPayments.length}
+              pageSize={paymentsPageSize}
+              onPageChange={setPaymentsPage}
+              onPageSizeChange={setPaymentsPageSize}
+              pageSizeOptions={[5, 10, 20]}
+              itemLabel="payments"
+            />
           </Card>
         </div>
       )}

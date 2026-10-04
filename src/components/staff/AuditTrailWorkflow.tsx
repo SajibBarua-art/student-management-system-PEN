@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDateTime } from "@/lib/formatters";
+import { Pagination } from "@/components/ui/pagination";
 
 interface AuditTrailWorkflowProps {
   initialLogs?: any[];
@@ -100,6 +101,18 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
 
     return matchesSearch && matchesAction;
   });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedActionFilter]);
+
+  const paginatedLogs = filteredLogs.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const gradeCount = logs.filter((l) => l.action.includes("GRADE")).length;
   const boardCount = logs.filter((l) => l.action.includes("BOARD")).length;
@@ -257,7 +270,7 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
             </div>
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-              {filteredLogs.map((log) => (
+              {paginatedLogs.map((log) => (
                 <div
                   key={log.id}
                   className="p-4 sm:p-5 hover:bg-slate-50/70 dark:hover:bg-white/[0.02] transition-colors flex flex-col sm:flex-row sm:items-start justify-between gap-3 text-xs"
@@ -300,6 +313,15 @@ export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}
             </div>
           )}
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredLogs.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={[15, 30, 50]}
+          itemLabel="events"
+        />
       </Card>
     </div>
   );

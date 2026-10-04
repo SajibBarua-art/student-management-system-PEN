@@ -27,6 +27,7 @@ import { Alert } from "@/components/ui/alert";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/formatters";
 import { generateTransactionReference } from "@/lib/transaction-ref";
 import { FeeReceiptModal } from "@/components/documents/FeeReceiptModal";
+import { Pagination } from "@/components/ui/pagination";
 
 interface FeesPaymentsWorkflowProps {
   students: any[];
@@ -285,6 +286,26 @@ export function FeesPaymentsWorkflow({
     return matchesSearch && matchesOverdue;
   });
 
+  const [studentsCurrentPage, setStudentsCurrentPage] = useState(1);
+  const [studentsPageSize, setStudentsPageSize] = useState(10);
+
+  useEffect(() => {
+    setStudentsCurrentPage(1);
+  }, [searchTerm, showOverdueOnly]);
+
+  const paginatedStudents = filteredStudents.slice(
+    (studentsCurrentPage - 1) * studentsPageSize,
+    studentsCurrentPage * studentsPageSize
+  );
+
+  const [paymentsCurrentPage, setPaymentsCurrentPage] = useState(1);
+  const [paymentsPageSize, setPaymentsPageSize] = useState(10);
+
+  const paginatedPayments = payments.slice(
+    (paymentsCurrentPage - 1) * paymentsPageSize,
+    paymentsCurrentPage * paymentsPageSize
+  );
+
   return (
     <div className="space-y-6">
       {/* Workflow Header */}
@@ -428,7 +449,7 @@ export function FeesPaymentsWorkflow({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-              {filteredStudents.map((s) => (
+              {paginatedStudents.map((s) => (
                 <tr
                   key={s.id}
                   className={`hover:bg-slate-50/80 dark:hover:bg-white/[0.03] transition-colors ${
@@ -532,6 +553,14 @@ export function FeesPaymentsWorkflow({
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={studentsCurrentPage}
+          totalItems={filteredStudents.length}
+          pageSize={studentsPageSize}
+          onPageChange={setStudentsCurrentPage}
+          onPageSizeChange={setStudentsPageSize}
+          itemLabel="student accounts"
+        />
       </Card>
 
       {/* Transaction History Ledger */}
@@ -568,7 +597,7 @@ export function FeesPaymentsWorkflow({
                   </td>
                 </tr>
               ) : (
-                payments.map((p) => (
+                paginatedPayments.map((p) => (
                   <tr
                     key={p.id}
                     className="hover:bg-slate-50/80 dark:hover:bg-white/[0.03] transition-colors"
@@ -619,6 +648,14 @@ export function FeesPaymentsWorkflow({
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={paymentsCurrentPage}
+          totalItems={payments.length}
+          pageSize={paymentsPageSize}
+          onPageChange={setPaymentsCurrentPage}
+          onPageSizeChange={setPaymentsPageSize}
+          itemLabel="transactions"
+        />
       </Card>
 
       {/* Record Payment Transaction Modal */}
