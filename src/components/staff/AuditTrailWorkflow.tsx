@@ -21,9 +21,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDateTime } from "@/lib/formatters";
 
-export function AuditTrailWorkflow() {
-  const [logs, setLogs] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface AuditTrailWorkflowProps {
+  initialLogs?: any[];
+}
+
+export function AuditTrailWorkflow({ initialLogs }: AuditTrailWorkflowProps = {}) {
+  const [logs, setLogs] = useState<any[]>(initialLogs || []);
+  const [isLoading, setIsLoading] = useState(!initialLogs || initialLogs.length === 0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedActionFilter, setSelectedActionFilter] = useState("ALL");
 
@@ -43,8 +47,10 @@ export function AuditTrailWorkflow() {
   };
 
   useEffect(() => {
-    fetchLogs();
-  }, []);
+    if (!initialLogs || initialLogs.length === 0) {
+      fetchLogs();
+    }
+  }, [initialLogs]);
 
   const getActionBadge = (action: string) => {
     switch (action) {
