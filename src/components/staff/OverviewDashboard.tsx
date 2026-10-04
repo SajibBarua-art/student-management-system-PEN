@@ -42,7 +42,7 @@ export function OverviewDashboard({
   onOpenEnrolModal,
   onOpenPaymentModal,
 }: OverviewProps) {
-  if (!stats) {
+  if (!stats || !stats.students || !stats.finances || !stats.assessments || !stats.grades) {
     return (
       <div className="py-24 text-center">
         <div className="animate-spin inline-block w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full mb-3" />

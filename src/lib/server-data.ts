@@ -111,56 +111,38 @@ export async function getDashboardStats() {
       }
     });
 
-    const gradeBreakdown = {
-      DISTINCTION: 0,
-      MERIT: 0,
-      PASS: 0,
-      FAIL: 0,
-    };
-    let publishedGradesCount = 0;
-    let withheldGradesCount = 0;
-
-    grades.forEach((g) => {
-      if (gradeBreakdown[g.classification as keyof typeof gradeBreakdown] !== undefined) {
-        gradeBreakdown[g.classification as keyof typeof gradeBreakdown]++;
-      }
-      if (g.isPublished) {
-        publishedGradesCount++;
-      } else {
-        withheldGradesCount++;
-      }
-    });
-
-    const lateSubmissionsCount = submissions.filter((sub) => sub.isLate).length;
+    const openAssessmentsCount = assessments.filter(
+      (a) => new Date(a.deadline) >= now
+    ).length;
+    const closedAssessmentsCount = assessments.length - openAssessmentsCount;
+    const lateSubmissionsCount = submissions.filter((s) => s.isLate).length;
+    const publishedGradesCount = grades.filter((g) => g.isPublished).length;
+    const pendingGradesCount = submissions.length - grades.length;
 
     return {
-      overview: {
-        totalStudents: students.length,
+      students: {
+        total: students.length,
         statusCounts: studentStatusCounts,
-        totalProgrammes: programmes.length,
-        totalAssessments: assessments.length,
       },
       finances: {
-        totalFeesAssigned,
-        totalPaymentsCollected,
-        totalOutstandingBalance,
-        collectionRate:
-          totalFeesAssigned > 0
-            ? Math.round((totalPaymentsCollected / totalFeesAssigned) * 100)
-            : 0,
+        totalAssigned: totalFeesAssigned,
+        totalCollected: totalPaymentsCollected,
+        outstandingBalance: totalOutstandingBalance,
         overdueCount: overdueStudents.length,
-        overdueStudents: overdueStudents.slice(0, 5),
+        overdueStudents,
       },
       assessments: {
-        totalAssessments: assessments.length,
+        total: assessments.length,
+        open: openAssessmentsCount,
+        closed: closedAssessmentsCount,
         totalSubmissions: submissions.length,
         lateSubmissions: lateSubmissionsCount,
       },
       grades: {
-        totalGraded: grades.length,
+        total: grades.length,
         published: publishedGradesCount,
-        withheld: withheldGradesCount,
-        breakdown: gradeBreakdown,
+        withheld: grades.length - publishedGradesCount,
+        pending: Math.max(0, pendingGradesCount),
       },
     };
   } catch (error) {
