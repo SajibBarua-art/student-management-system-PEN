@@ -70,13 +70,60 @@ export function StudentPortal({
   initialStudent = null,
   initialAssessments = [],
 }: StudentPortalProps) {
+  // 1. Core Portal States
   const [student, setStudent] = useState<any | null>(initialStudent);
   const [assessments, setAssessments] = useState<any[]>(initialAssessments);
   const [activeTab, setActiveTab] = useState<"finance" | "assessments" | "marksheet">("assessments");
   const [isLoading, setIsLoading] = useState(!initialStudent);
   const [portalError, setPortalError] = useState<string | null>(null);
 
-  // Sync subtab state on mount and when browser history navigates
+  // 2. Tab 1 Deliverables Filter & Pagination States
+  const [assessmentSearchTerm, setAssessmentSearchTerm] = useState("");
+  const [assessmentStatusFilter, setAssessmentStatusFilter] = useState<string>(FILTER_ALL);
+  const [assessmentsPage, setAssessmentsPage] = useState(1);
+  const [assessmentsPageSize, setAssessmentsPageSize] = useState<number>(PAGINATION.CARD_PAGE_SIZE);
+
+  // 3. Tab 2 Marksheet Filter & Pagination States
+  const [gradesSearchTerm, setGradesSearchTerm] = useState("");
+  const [gradesClassificationFilter, setGradesClassificationFilter] = useState<string>(FILTER_ALL);
+  const [gradesPage, setGradesPage] = useState(1);
+  const [gradesPageSize, setGradesPageSize] = useState<number>(PAGINATION.COMPACT_PAGE_SIZE);
+
+  // 4. Tab 3 Fees & Ledger Filter & Pagination States
+  const [feesSearchTerm, setFeesSearchTerm] = useState("");
+  const [feesCategoryFilter, setFeesCategoryFilter] = useState<string>(FILTER_ALL);
+  const [feesPage, setFeesPage] = useState(1);
+  const [feesPageSize, setFeesPageSize] = useState<number>(PAGINATION.COMPACT_PAGE_SIZE);
+
+  // 5. Tab 3 Payment Receipts Filter & Pagination States
+  const [paymentsSearchTerm, setPaymentsSearchTerm] = useState("");
+  const [paymentsMethodFilter, setPaymentsMethodFilter] = useState<string>(FILTER_ALL);
+  const [paymentsPage, setPaymentsPage] = useState(1);
+  const [paymentsPageSize, setPaymentsPageSize] = useState<number>(PAGINATION.COMPACT_PAGE_SIZE);
+
+  // 6. Modal Dialog States
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [activeAssessmentForUpload, setActiveAssessmentForUpload] = useState<any | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadNotes, setUploadNotes] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+
+  const [isTranscriptModalOpen, setIsTranscriptModalOpen] = useState(false);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [selectedPaymentForReceipt, setSelectedPaymentForReceipt] = useState<any | null>(null);
+
+  const [isEcModalOpen, setIsEcModalOpen] = useState(false);
+  const [activeAssessmentForEc, setActiveAssessmentForEc] = useState<any | null>(null);
+  const [ecReason, setEcReason] = useState<string>(EC_REASONS.MEDICAL);
+  const [ecExplanation, setEcExplanation] = useState<string>("");
+  const [ecDays, setEcDays] = useState<string>("7");
+  const [isSubmittingEc, setIsSubmittingEc] = useState(false);
+  const [ecError, setEcError] = useState<string | null>(null);
+  const [ecSuccess, setEcSuccess] = useState<string | null>(null);
+
+  // 7. Lifecycle & Filter Reset Effects
   useEffect(() => {
     if (typeof window === "undefined") return;
     const syncSubtab = () => {
@@ -91,6 +138,22 @@ export function StudentPortal({
     return () => window.removeEventListener("popstate", syncSubtab);
   }, []);
 
+  useEffect(() => {
+    setAssessmentsPage(1);
+  }, [assessmentSearchTerm, assessmentStatusFilter]);
+
+  useEffect(() => {
+    setGradesPage(1);
+  }, [gradesSearchTerm, gradesClassificationFilter]);
+
+  useEffect(() => {
+    setFeesPage(1);
+  }, [feesSearchTerm, feesCategoryFilter]);
+
+  useEffect(() => {
+    setPaymentsPage(1);
+  }, [paymentsSearchTerm, paymentsMethodFilter]);
+
   const handleTabChange = (newTab: "finance" | "assessments" | "marksheet") => {
     setActiveTab(newTab);
     if (typeof window !== "undefined") {
@@ -99,30 +162,6 @@ export function StudentPortal({
       window.history.pushState(null, "", `?${p.toString()}`);
     }
   };
-
-  // Upload modal state
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [activeAssessmentForUpload, setActiveAssessmentForUpload] = useState<any | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadNotes, setUploadNotes] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
-
-  // Official Documents modal state
-  const [isTranscriptModalOpen, setIsTranscriptModalOpen] = useState(false);
-  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
-  const [selectedPaymentForReceipt, setSelectedPaymentForReceipt] = useState<any | null>(null);
-
-  // Extenuating Circumstances (EC) modal state
-  const [isEcModalOpen, setIsEcModalOpen] = useState(false);
-  const [activeAssessmentForEc, setActiveAssessmentForEc] = useState<any | null>(null);
-  const [ecReason, setEcReason] = useState<string>(EC_REASONS.MEDICAL);
-  const [ecExplanation, setEcExplanation] = useState<string>("");
-  const [ecDays, setEcDays] = useState<string>("7");
-  const [isSubmittingEc, setIsSubmittingEc] = useState(false);
-  const [ecError, setEcError] = useState<string | null>(null);
-  const [ecSuccess, setEcSuccess] = useState<string | null>(null);
 
   const handleOpenEcModal = (asm: any) => {
     setActiveAssessmentForEc(asm);
@@ -275,12 +314,7 @@ export function StudentPortal({
     }
   };
 
-  // Tab 1: Coursework Deliverables filters & pagination
-  const [assessmentSearchTerm, setAssessmentSearchTerm] = useState("");
-  const [assessmentStatusFilter, setAssessmentStatusFilter] = useState<string>(FILTER_ALL);
-  const [assessmentsPage, setAssessmentsPage] = useState(1);
-  const [assessmentsPageSize, setAssessmentsPageSize] = useState<number>(PAGINATION.CARD_PAGE_SIZE);
-
+  // Tab 1: Coursework Deliverables calculations
   const filteredAssessments = assessments.filter((asm) => {
     const matchesSearch =
       assessmentSearchTerm === "" ||
@@ -305,24 +339,15 @@ export function StudentPortal({
     return matchesSearch && matchesStatus;
   });
 
-  useEffect(() => {
-    setAssessmentsPage(1);
-  }, [assessmentSearchTerm, assessmentStatusFilter]);
-
   const paginatedAssessments = filteredAssessments.slice(
     (assessmentsPage - 1) * assessmentsPageSize,
     assessmentsPage * assessmentsPageSize
   );
 
-  // Tab 2: Official Marksheet Table filters & pagination
+  // Tab 2: Official Marksheet Table calculations
   const publishedGrades = student?.grades?.filter((g: any) => g.isPublished) || [];
   const withheldGradesCount = (student?.grades?.length || 0) - publishedGrades.length;
   const academicStanding = student?.academicStanding || calculateAcademicStanding(student?.grades || [], true);
-
-  const [gradesSearchTerm, setGradesSearchTerm] = useState("");
-  const [gradesClassificationFilter, setGradesClassificationFilter] = useState<string>(FILTER_ALL);
-  const [gradesPage, setGradesPage] = useState(1);
-  const [gradesPageSize, setGradesPageSize] = useState<number>(PAGINATION.COMPACT_PAGE_SIZE);
 
   const filteredGrades = publishedGrades.filter((g: any) => {
     const matchesSearch =
@@ -337,21 +362,13 @@ export function StudentPortal({
     return matchesSearch && matchesClass;
   });
 
-  useEffect(() => {
-    setGradesPage(1);
-  }, [gradesSearchTerm, gradesClassificationFilter]);
-
   const paginatedGrades = filteredGrades.slice(
     (gradesPage - 1) * gradesPageSize,
     gradesPage * gradesPageSize
   );
 
-  // Tab 3: Fee Billing Schedule filters & pagination
+  // Tab 3: Fee Billing Schedule calculations
   const studentFees = student?.fees || [];
-  const [feesSearchTerm, setFeesSearchTerm] = useState("");
-  const [feesCategoryFilter, setFeesCategoryFilter] = useState<string>(FILTER_ALL);
-  const [feesPage, setFeesPage] = useState(1);
-  const [feesPageSize, setFeesPageSize] = useState<number>(PAGINATION.COMPACT_PAGE_SIZE);
 
   const filteredFees = studentFees.filter((fee: any) => {
     const matchesSearch =
@@ -367,21 +384,13 @@ export function StudentPortal({
     return matchesSearch && matchesCategory;
   });
 
-  useEffect(() => {
-    setFeesPage(1);
-  }, [feesSearchTerm, feesCategoryFilter]);
-
   const paginatedFees = filteredFees.slice(
     (feesPage - 1) * feesPageSize,
     feesPage * feesPageSize
   );
 
-  // Tab 3: Payment Receipts & History filters & pagination
+  // Tab 3: Payment Receipts & History calculations
   const studentPayments = student?.payments || [];
-  const [paymentsSearchTerm, setPaymentsSearchTerm] = useState("");
-  const [paymentsMethodFilter, setPaymentsMethodFilter] = useState<string>(FILTER_ALL);
-  const [paymentsPage, setPaymentsPage] = useState(1);
-  const [paymentsPageSize, setPaymentsPageSize] = useState<number>(PAGINATION.COMPACT_PAGE_SIZE);
 
   const filteredPayments = studentPayments.filter((p: any) => {
     const matchesSearch =
@@ -394,10 +403,6 @@ export function StudentPortal({
 
     return matchesSearch && matchesMethod;
   });
-
-  useEffect(() => {
-    setPaymentsPage(1);
-  }, [paymentsSearchTerm, paymentsMethodFilter]);
 
   const paginatedPayments = filteredPayments.slice(
     (paymentsPage - 1) * paymentsPageSize,
